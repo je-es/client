@@ -39,6 +39,10 @@
             splitChunks?: boolean;
             treeShaking?: boolean;
         };
+        styles?: {
+            input?: string;  // Default: './app/style'
+            output?: string; // Default: './static/client.css'
+        };
     }
 
     export interface AppConfig {

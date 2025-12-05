@@ -12,6 +12,10 @@ interface BuildConfig {
         splitChunks?: boolean;
         treeShaking?: boolean;
     };
+    styles?: {
+        input?: string;
+        output?: string;
+    };
 }
 interface AppConfig {
     root: string;
@@ -294,6 +298,22 @@ declare function client(config: ClientConfig): {
      * This compiles TypeScript components to vanilla JavaScript
      */
     build(): Promise<void>;
+    /**
+     * Build JavaScript bundle
+     */
+    _buildJS(): Promise<void>;
+    /**
+     * Build SASS/CSS styles
+     */
+    _buildStyles(): Promise<void>;
+    /**
+     * Recursively collect all SASS/SCSS files
+     */
+    _collectSassFiles(dir: string): string[];
+    /**
+     * Watch mode for development
+     */
+    watch(): Promise<void>;
     /**
      * Initialize the client runtime
      * This runs in the browser

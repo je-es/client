@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.0.3-black"/>
+    <img src="https://img.shields.io/badge/v-0.0.4-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/client/actions/workflows/ci.yml/badge.svg" alt="CI" />
@@ -49,9 +49,10 @@
 
             ```bash
             > space lint
-            > space build
+            > space build                 # Builds both JavaScript and SASS/CSS
             > space test
             > space start
+            > space watch                 # Development mode with auto-rebuild
             ```
 
         - #### Usage
@@ -72,15 +73,26 @@
                         </div>
                     `;
                 }
+
+                styles() {
+                    return css`
+                        .my-component {
+                            padding: 2rem;
+                            background: var(--bg-color-primary);
+                        }
+                    `;
+                }
             }
             ```
 
             ```bash
              > space start
 
-               Building @je-es/client application...
-               Build completed successfully!
-               Output: ./src/frontend/static/js/client.js
+               🔨 Building @je-es/client application...
+               📦 JavaScript bundled
+               📝 Found 8 SASS file(s)
+               💅 Styles compiled to ./static/client.css
+               ✅ Build completed successfully!
 
                Server started at http://localhost:3000
             ```
@@ -132,6 +144,36 @@
                 `;
             }
         }
+        ```
+
+        <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
+
+    - ### SASS Styling System
+
+        ```typescript
+        import { client } from '@je-es/client';
+
+        // Configure build with SASS support
+        const app = client({
+            build: {
+                entry: './app/main.ts',
+                output: './static/client.js',
+                minify: true,
+                sourcemap: true,
+                optimization: {
+                    splitChunks: false,
+                    treeShaking: true,
+                },
+                // SASS Configuration
+                styles: {
+                    input: './app/style',           // SASS files directory
+                    output: './static/css/client.css',  // Compiled CSS output
+                },
+            },
+            app: {
+                root: '#app',
+            },
+        });
         ```
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
@@ -422,6 +464,118 @@
             params: { folder: 'avatars' },
             timeout: 60000
         });
+        ```
+
+    <br>
+
+- ## Build System
+
+    - ### Build Configuration
+
+        ```typescript
+        import { client } from '@je-es/client';
+
+        const app = client({
+            build: {
+                // JavaScript Configuration
+                entry: './app/main.ts',
+                output: './static/client.js',
+                minify: true,                    // Minify JS in production
+                sourcemap: true,                 // Generate source maps
+                optimization: {
+                    splitChunks: false,          // Code splitting
+                    treeShaking: true,           // Remove unused code
+                },
+
+                // SASS/CSS Configuration
+                styles: {
+                    input: './app/style',        // SASS directory
+                    output: './static/client.css', // CSS output
+                },
+            },
+            app: {
+                root: '#app',
+                mode: 'spa',
+            },
+            router: {
+                mode: 'history',
+                base: '/',
+            },
+            devTools: {
+                enabled: true,
+            },
+        });
+
+        // Build script
+        if (import.meta.main) {
+            await app.build();
+        }
+
+        // Runtime (in browser)
+        if (typeof window !== 'undefined') {
+            app.init();
+        }
+        ```
+
+        <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
+
+    - ### Build Commands
+
+        ```bash
+        # Production build (minified)
+        bun run build
+
+        # Development build (with source maps)
+        bun run build --dev
+
+        # Watch mode (auto-rebuild on changes)
+        bun run watch
+
+        # Clean build directory
+        bun run clean
+        ```
+
+        **Build Output:**
+        ```
+        🔨 Building @je-es/client application...
+        📦 JavaScript bundled
+        📝 Found 8 SASS file(s)
+        💅 Styles compiled to ./static/client.css
+        ✅ Build completed successfully!
+        ```
+
+        <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
+
+    - ### Watch Mode for Development
+
+        ```typescript
+        // watch.ts or dev script
+        import { client } from '@je-es/client';
+
+        const app = client({
+            build: {
+                entry: './app/main.ts',
+                output: './static/client.js',
+                minify: false,
+                sourcemap: true,
+                styles: {
+                    input: './app/style',
+                    output: './static/client.css',
+                },
+            },
+        });
+
+        // Start watch mode
+        await app.watch();
+        ```
+
+        ```bash
+        # Terminal output:
+        👀 Watching for changes...
+        🔄 main.ts changed, rebuilding JS...
+        ✅ JS rebuild complete
+        🔄 layout.sass changed, rebuilding CSS...
+        ✅ CSS rebuild complete
         ```
 
     <br>
