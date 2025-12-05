@@ -1,0 +1,55 @@
+{
+	"name"                             : "@je-es/client",
+	"version"                          : "0.0.1",
+	"description"                      : "The simplest, fastest and most organized way to manage the front-end of web applications.",
+	"keywords"                         : ["je-es", "client", "frontend", "framework", "api", "router", "ui", "style", "dom", "component", "hooks", "state"],
+	"license"                          : "MIT",
+	"homepage"                         : "https://github.com/je-es/client#readme",
+	"bugs"                             : {
+		"url"                          : "https://github.com/je-es/client/issues"
+	},
+	"author"                           : {
+		"name"                         : "Maysara",
+		"email"                        : "maysara.elshewehy@gmail.com",
+		"url"                          : "https://github.com/maysara-elshewehy"
+	},
+	"repository"                       : {
+		"type"                         : "git",
+		"url"                          : "git+https://github.com/je-es/client.git"
+	},
+	"type"                             : "module",
+	"main"                             : "./dist/main.js",
+	"types"                            : "./dist/main.d.ts",
+	"files"                            : ["dist"],
+	"exports"                          : {
+		"."                            : {
+			"types"                    : "./dist/main.d.ts",
+			"import"                   : "./dist/main.js",
+			"require"                  : "./dist/main.js"
+		}
+	},
+	"scripts"                          : {},
+	"engines"                          : {
+		"bun"                          : ">=1.3.3"
+	},
+	"peerDependencies"                 : {
+		"bun"                          : ">=1.3.3"
+	},
+	"dependencies"                     : {
+		"@je-es/capi"                  : "^0.0.4",
+		"@je-es/vdom"                  : "^0.0.1"
+	},
+	"devDependencies"                  : {
+		"@eslint/js"                   : "^9.34.0",
+		"@stylistic/eslint-plugin"     : "^5.3.1",
+		"@types/bun"                   : "^1.1.13",
+		"@types/node"                  : "^20.12.7",
+		"bun-plugin-dts"               : "^0.3.0",
+		"bun-types"                    : "^1.1.38",
+		"happy-dom"                    : "^20.0.11",
+		"ts-node"                      : "^10.9.2",
+		"tsup"                         : "^8.5.1",
+		"typescript"                   : "^5.4.5",
+		"typescript-eslint"            : "^8.42.0"
+	}
+}

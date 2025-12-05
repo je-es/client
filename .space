@@ -1,0 +1,23 @@
+{
+	"type"          : "lib",
+	"template"      : "clean",
+	"pm"            : "bun",
+	"repo"          : {
+		"org"       : "je-es",
+		"name"      : "client",
+		"version"   : "0.0.1",
+		"desc"      : "The simplest, fastest and most organized way to manage the front-end of web applications.",
+		"kw"        : ["je-es", "client", "frontend", "framework", "api", "router", "ui", "style", "dom", "component", "hooks", "state"],
+		"license"   : "MIT",
+		"issues"    : "https://github.com/je-es/client/issues",
+		"homepage"  : "https://github.com/je-es/client#readme",
+		"git_url"   : "git+https://github.com/je-es/client.git"
+	},
+	"author"        : {
+		"id"        : "maysara-elshewehy",
+		"name"      : "Maysara",
+		"email"     : "maysara.elshewehy@gmail.com",
+		"url"       : "https://github.com/maysara-elshewehy"
+	},
+	"createdAt"     : "2025-11-29T10:47:39.167Z"
+}
