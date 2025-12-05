@@ -129,6 +129,7 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     private _refs;
     private _subscriptions;
     private _memoCache;
+    private _childComponents;
     constructor(props?: P, initialState?: S);
     onBeforeMount?(): void | Promise<void>;
     onMount?(): void | Promise<void>;
@@ -157,6 +158,14 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     subscribe(subscription: () => void): void;
     debounce<T extends (...args: unknown[]) => unknown>(fn: T, delay: number): (...args: Parameters<T>) => void;
     throttle<T extends (...args: unknown[]) => unknown>(fn: T, delay: number): (...args: Parameters<T>) => void;
+    /**
+     * Register a child component for lifecycle tracking
+     */
+    registerChild(container: HTMLElement, component: Component): void;
+    /**
+     * Unregister a child component
+     */
+    unregisterChild(container: HTMLElement): void;
     get element(): HTMLElement | null;
     get isMounted(): boolean;
     get isUnmounting(): boolean;
@@ -247,7 +256,7 @@ declare class Router {
     private _runNavigationGuards;
     private _runGuard;
     /**
-     * Render component - simplified component resolution
+     * Render component - FIXED: Only clears outlet content, doesn't affect parent components
      */
     private _renderComponent;
     /**
