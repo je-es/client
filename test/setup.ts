@@ -191,7 +191,7 @@
         platform: 'Test'
     };
 
-    console.log('✓ DOM environment setup complete');
+    // console.log('✓ DOM environment setup complete');
 
     export { window, document };
 

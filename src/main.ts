@@ -81,4 +81,14 @@
     // Scheduler
     export { scheduler } from './mod/core/scheduler';
 
+    import { setConfig } from '@je-es/vdom';
+
+    setConfig({
+        devMode: false,              // Enable warnings
+        sanitizeHTML: true,         // XSS protection
+        // onError: (err) => {         // Custom error handler
+        //     console.error('VDOM Error:', err);
+        // }
+    });
+
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

@@ -6,7 +6,7 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import type { ClientConfig, Route }             from '../../types';
+    import type { ClientConfig }                    from '../../types';
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
@@ -78,7 +78,7 @@
                     return;
                 }
 
-                console.log('🔨 Building @je-es/client application...');
+                // console.log('🔨 Building @je-es/client application...');
 
                 try {
                     // Use Bun's bundler
@@ -99,8 +99,8 @@
                         throw new Error('Build failed');
                     }
 
-                    console.log('✅ Build completed successfully!');
-                    console.log(`📦 Output: ${_config.build.output}`);
+                    // console.log('✅ Build completed successfully!');
+                    // console.log(`📦 Output: ${_config.build.output}`);
 
                 } catch (error) {
                     console.error('❌ Build error:', error);
@@ -113,7 +113,7 @@
              * This runs in the browser
              */
             init(): void {
-                console.log('🚀 Initializing @je-es/client...');
+                // console.log('🚀 Initializing @je-es/client...');
 
                 // Configure API client
                 if (_config.api) {
@@ -157,7 +157,7 @@
                 if (_config.app?.root) {
                     const rootElement = document.querySelector(_config.app.root);
                     if (rootElement) {
-                        console.log('✅ Client initialized successfully!');
+                        // console.log('✅ Client initialized successfully!');
                     } else {
                         console.error(`❌ Root element "${_config.app.root}" not found`);
                     }
@@ -173,7 +173,7 @@
              * Enable development tools
              */
             _enableDevTools(): void {
-                console.log('🛠️ Dev tools enabled');
+                // console.log('🛠️ Dev tools enabled');
 
                 // Add dev tools to window
                 window.__JEES_DEV__ = {
@@ -182,17 +182,17 @@
                     version: '0.0.1',
                 };
 
-                // Log router changes
-                if (_config.devTools?.showRouterInfo) {
-                    router.afterEach((to: Route, from: Route) => {
-                        console.log('📍 Route changed:', {
-                            from: from.path,
-                            to: to.path,
-                            params: to.params,
-                            query: to.query,
-                        });
-                    });
-                }
+                // // Log router changes
+                // if (_config.devTools?.showRouterInfo) {
+                //     router.afterEach((to: Route, from: Route) => {
+                //         console.log('📍 Route changed:', {
+                //             from: from.path,
+                //             to: to.path,
+                //             params: to.params,
+                //             query: to.query,
+                //         });
+                //     });
+                // }
             },
 
             /**

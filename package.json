@@ -1,6 +1,6 @@
 {
 	"name"                             : "@je-es/client",
-	"version"                          : "0.0.1",
+	"version"                          : "0.0.2",
 	"description"                      : "The simplest, fastest and most organized way to manage the front-end of web applications.",
 	"keywords"                         : ["je-es", "client", "frontend", "framework", "api", "router", "ui", "style", "dom", "component", "hooks", "state"],
 	"license"                          : "MIT",

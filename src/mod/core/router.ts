@@ -383,12 +383,12 @@
                 }
 
                 const ComponentCtor = ComponentClass as new () => Component;
-                console.log('🎨 Mounting:', ComponentCtor.name || 'Component');
+                // console.log('🎨 Mounting:', ComponentCtor.name || 'Component');
                 this.currentComponent = new ComponentCtor();
 
                 if (this.currentComponent) {
                     await this.currentComponent.mount(this.routerOutlet);
-                    console.log('✅ Mounted successfully!');
+                    // console.log('✅ Mounted successfully!');
                 }
 
             } catch (error) {
@@ -403,7 +403,7 @@
         private async _resolveComponent(
             component: ComponentConstructor | (() => Promise<LazyModule>)
         ): Promise<ComponentConstructor | null> {
-            console.log('🔍 Resolving component...');
+            // console.log('🔍 Resolving component...');
 
             // Check if it's a class constructor
             if (typeof component === 'function') {
@@ -411,17 +411,17 @@
                 const hasPrototype = 'prototype' in component && component.prototype;
                 const proto = hasPrototype ? (component as { prototype: unknown }).prototype : null;
                 const hasConstructor = proto && typeof proto === 'object' && 'constructor' in proto;
-                
+
                 if (hasConstructor && (proto as { constructor: unknown }).constructor === component) {
-                    console.log('✅ Direct component class');
+                    // console.log('✅ Direct component class');
                     return component as ComponentConstructor;
                 }
 
                 // Otherwise treat as lazy loader
-                console.log('📦 Lazy loading...');
+                // console.log('📦 Lazy loading...');
                 try {
                     const result = await (component as () => Promise<LazyModule>)();
-                    console.log('📦 Module keys:', Object.keys(result));
+                    // console.log('📦 Module keys:', Object.keys(result));
 
                     // Find component in module
                     const found = result.HomePage ||

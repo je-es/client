@@ -441,30 +441,30 @@ declare class StyleManager {
  */
 declare function css(strings: TemplateStringsArray, ...values: unknown[]): string;
 
-interface ClassFieldDecoratorContext {
+interface ClassFieldDecoratorContext<This = unknown, Value = unknown> {
     kind: 'field';
     name: string | symbol;
     access: {
-        get(this: unknown): unknown;
-        set(this: unknown, value: unknown): void;
+        get(object: This): Value;
+        set(object: This, value: Value): void;
     };
-    addInitializer(initializer: (this: unknown) => void): void;
+    addInitializer(initializer: (this: This) => void): void;
 }
-interface ClassGetterDecoratorContext {
+interface ClassGetterDecoratorContext<This = unknown, Value = unknown> {
     kind: 'getter';
     name: string | symbol;
     access: {
-        get(this: unknown): unknown;
+        get(object: This): Value;
     };
-    addInitializer(initializer: (this: unknown) => void): void;
+    addInitializer(initializer: (this: This) => void): void;
 }
-interface ClassMethodDecoratorContext {
+interface ClassMethodDecoratorContext<This = unknown, Value = unknown> {
     kind: 'method';
     name: string | symbol;
     access: {
-        get(this: unknown): unknown;
+        get(object: This): Value;
     };
-    addInitializer(initializer: (this: unknown) => void): void;
+    addInitializer(initializer: (this: This) => void): void;
 }
 /**
  * State decorator - makes property reactive
@@ -472,17 +472,23 @@ interface ClassMethodDecoratorContext {
  *
  * Supports both TypeScript 5 decorators and legacy decorators
  */
-declare function state(target: Record<string, unknown>, context?: string | ClassFieldDecoratorContext): unknown;
+declare function state<This, Value>(target: undefined, context: ClassFieldDecoratorContext<This, Value>): (this: This, initialValue: Value) => Value;
+declare function state(target: Record<string, unknown>, context: string): void;
 /**
  * Computed decorator - creates computed property
  * Usage: @computed get fullName() { return this.firstName + ' ' + this.lastName; }
  */
-declare function computed(target: Record<string, unknown>, context?: string | ClassGetterDecoratorContext, descriptor?: PropertyDescriptor): unknown;
+declare function computed<This, Value>(originalGetter: (this: This) => Value, context: ClassGetterDecoratorContext<This, Value>): (this: This) => Value;
+declare function computed(target: Record<string, unknown>, context: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+declare function computed(targetOrGetter: unknown, context: unknown): never;
 /**
  * Watch decorator - watches for property changes
  * Usage: @watch('propertyName') onPropertyChange(newValue, oldValue) {}
  */
-declare function watch(propertyName: string): (target: Record<string, unknown>, context?: string | ClassMethodDecoratorContext, descriptor?: PropertyDescriptor) => PropertyDescriptor | void;
+declare function watch(propertyName: string): {
+    <This, Args extends unknown[], Return>(originalMethod: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>): void;
+    (target: Record<string, unknown>, context: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+};
 
 interface FormConfig {
     fields: FormFieldConfig[];

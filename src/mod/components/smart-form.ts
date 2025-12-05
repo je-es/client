@@ -82,7 +82,7 @@
         }
 
         onMount(): void {
-            console.log('📝 SmartForm mounted with', this.fields.length, 'fields');
+            // console.log('📝 SmartForm mounted with', this.fields.length, 'fields');
         }
 
         /**
