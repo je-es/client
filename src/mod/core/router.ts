@@ -354,7 +354,7 @@
         }
 
         /**
-         * Render component - FIXED: Only clears outlet content, doesn't affect parent components
+         * Render component - simplified component resolution
          */
         private async _renderComponent(route: RouteConfig): Promise<void> {
             // Get or find outlet
@@ -366,21 +366,14 @@
                 }
             }
 
-            // Unmount previous component PROPERLY
+            // Unmount previous component
             if (this.currentComponent) {
-                try {
-                    this.currentComponent.unmount();
-                } catch (error) {
-                    console.error('Error unmounting component:', error);
-                }
+                this.currentComponent.unmount();
                 this.currentComponent = null;
             }
 
-            // FIXED: Only clear DIRECT children of outlet, preserve the outlet element itself
-            // This prevents destroying parent component references
-            while (this.routerOutlet.firstChild) {
-                this.routerOutlet.removeChild(this.routerOutlet.firstChild);
-            }
+            // Clear outlet
+            this.routerOutlet.innerHTML = '';
 
             try {
                 const ComponentClass = await this._resolveComponent(route.component);
@@ -396,12 +389,6 @@
                 if (this.currentComponent) {
                     await this.currentComponent.mount(this.routerOutlet);
                     // console.log('✅ Mounted successfully!');
-
-                    // Dispatch custom event after route component is mounted
-                    // This allows parent components (like Navbar) to reinitialize if needed
-                    window.dispatchEvent(new CustomEvent('route-component-mounted', {
-                        detail: { route: route.path, component: ComponentCtor.name }
-                    }));
                 }
 
             } catch (error) {

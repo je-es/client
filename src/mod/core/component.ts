@@ -31,7 +31,6 @@
         private _refs = new Map<string, HTMLElement>();
         private _subscriptions: (() => void)[] = [];
         private _memoCache = new Map<string, { args: unknown[]; result: unknown }>();
-        private _childComponents = new Map<HTMLElement, Component>(); // Track child components
 
         constructor(props?: P, initialState?: S) {
             this.props = props || {} as P;
@@ -176,14 +175,6 @@
                 this._subscriptions.forEach(unsubscribe => unsubscribe());
                 this._subscriptions = [];
 
-                // Unmount child components
-                for (const [, childComponent] of this._childComponents) {
-                    if (childComponent._isMounted) {
-                        childComponent.unmount();
-                    }
-                }
-                this._childComponents.clear();
-
                 if (this._element?.parentElement) {
                     this._element.parentElement.removeChild(this._element);
                 }
@@ -277,22 +268,6 @@
             };
         }
 
-        // ─── Child Component Management ───
-
-        /**
-         * Register a child component for lifecycle tracking
-         */
-        registerChild(container: HTMLElement, component: Component): void {
-            this._childComponents.set(container, component);
-        }
-
-        /**
-         * Unregister a child component
-         */
-        unregisterChild(container: HTMLElement): void {
-            this._childComponents.delete(container);
-        }
-
         // ─── Getters ───
 
         get element(): HTMLElement | null {
@@ -327,46 +302,11 @@
 
                 if (this._vnode && parent) {
                     const index = Array.from(parent.childNodes).indexOf(this._element);
-
-                    // Store references to child component containers BEFORE patching
-                    const childContainers = new Map<string, { container: HTMLElement; component: Component }>();
-                    for (const [container, component] of this._childComponents) {
-                        // Use data attribute as stable identifier
-                        const id = container.getAttribute('data-theme-toggle') ||
-                                 container.getAttribute('data-language-toggle') ||
-                                 container.getAttribute('data-child-component');
-                        if (id) {
-                            childContainers.set(id, { container, component });
-                        }
-                    }
-
                     // Convert to VDom-compatible VNode
                     const oldVDomNode = this._convertToVDomNode(this._vnode);
                     const newVDomNode = this._convertToVDomNode(newVNode);
                     patch(parent, oldVDomNode, newVDomNode, index);
                     this._element = parent.childNodes[index] as HTMLElement;
-
-                    // Restore child components after patching
-                    for (const [id, { component }] of childContainers) {
-                        // Find the container again in the updated DOM
-                        const newContainer = this._element.querySelector(
-                            `[data-theme-toggle="${id}"], [data-language-toggle="${id}"], [data-child-component="${id}"]`
-                        ) as HTMLElement;
-
-                        if (newContainer && !component.element?.isConnected) {
-                            // Container exists but component is not mounted - remount it
-                            try {
-                                await component.mount(newContainer);
-                                this._childComponents.set(newContainer, component);
-                            } catch (error) {
-                                console.error('Error remounting child component:', error);
-                            }
-                        } else if (newContainer && component.element?.isConnected) {
-                            // Update the container reference
-                            this._childComponents.delete(childContainers.get(id)!.container);
-                            this._childComponents.set(newContainer, component);
-                        }
-                    }
                 }
 
                 this._vnode = newVNode;
