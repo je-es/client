@@ -121,7 +121,7 @@
                     throw new Error('JS Build failed');
                 }
 
-                console.log('📦 JavaScript bundled');
+                // console.log('📦 JavaScript bundled');
             },
 
             /**
@@ -153,7 +153,7 @@
                         return;
                     }
 
-                    console.log(`📝 Found ${sassFiles.length} SASS file(s)`);
+                    // console.log(`📝 Found ${sassFiles.length} SASS file(s)`);
 
                     // Compile all SASS files and combine
                     let combinedCSS = '';
@@ -179,7 +179,7 @@
                     const fullOutputPath = join(outputDir, outputFile);
                     writeFileSync(fullOutputPath, combinedCSS, 'utf-8');
 
-                    console.log(`💅 Styles compiled to ${fullOutputPath}`);
+                    // console.log(`💅 Styles compiled to ${fullOutputPath}`);
 
                     // Write source map if enabled
                     if (_config.build?.sourcemap) {
