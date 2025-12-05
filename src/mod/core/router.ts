@@ -69,7 +69,7 @@
          */
         async push(path: string, state?: Record<string, unknown>): Promise<void> {
             if (this.isNavigating) {
-                console.warn('Navigation already in progress');
+                // console.warn('Navigation already in progress');
                 return;
             }
 
