@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.0.7-black"/>
+    <img src="https://img.shields.io/badge/v-0.0.8-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/client/actions/workflows/ci.yml/badge.svg" alt="CI" />
@@ -49,7 +49,7 @@
 
             ```bash
             > space lint
-            > space build                 # Builds both JavaScript and SASS/CSS
+            > space build                 # Builds both JavaScript and SCSS
             > space test
             > space start
             > space watch                 # Development mode with auto-rebuild
@@ -88,11 +88,8 @@
             ```bash
              > space start
 
-               🔨 Building @je-es/client application...
-               📦 JavaScript bundled
-               📝 Found 8 SASS file(s)
-               💅 Styles compiled to ./static/client.css
-               ✅ Build completed successfully!
+               - Building @je-es/client application...
+               - Build completed successfully!
 
                Server started at http://localhost:3000
             ```
@@ -148,12 +145,12 @@
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 
-    - ### SASS Styling System
+    - ### SCSS Styling System
 
         ```typescript
         import { client } from '@je-es/client';
 
-        // Configure build with SASS support
+        // Configure build with SCSS support
         const app = client({
             build: {
                 entry: './app/main.ts',
@@ -164,9 +161,9 @@
                     splitChunks: false,
                     treeShaking: true,
                 },
-                // SASS Configuration
+                // SCSS Configuration
                 styles: {
-                    input: './app/style',           // SASS files directory
+                    input: './app/style',               // SCSS files directory
                     output: './static/css/client.css',  // Compiled CSS output
                 },
             },
@@ -487,9 +484,9 @@
                     treeShaking: true,           // Remove unused code
                 },
 
-                // SASS/CSS Configuration
+                // SCSS Configuration
                 styles: {
-                    input: './app/style',        // SASS directory
+                    input: './app/style',          // SCSS directory
                     output: './static/client.css', // CSS output
                 },
             },
@@ -537,11 +534,8 @@
 
         **Build Output:**
         ```
-        🔨 Building @je-es/client application...
-        📦 JavaScript bundled
-        📝 Found 8 SASS file(s)
-        💅 Styles compiled to ./static/client.css
-        ✅ Build completed successfully!
+        - Building @je-es/client application...
+        - Build completed successfully!
         ```
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
@@ -574,7 +568,7 @@
         👀 Watching for changes...
         🔄 main.ts changed, rebuilding JS...
         ✅ JS rebuild complete
-        🔄 layout.sass changed, rebuilding CSS...
+        🔄 layout.scss changed, rebuilding CSS...
         ✅ CSS rebuild complete
         ```
 

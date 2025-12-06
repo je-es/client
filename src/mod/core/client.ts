@@ -87,7 +87,7 @@
                     // Build JavaScript
                     await this._buildJS();
 
-                    // Build SASS/CSS
+                    // Build SCSS/CSS
                     await this._buildStyles();
 
                     console.log('✅ Build completed successfully!');
@@ -125,7 +125,7 @@
             },
 
             /**
-             * Build SASS/CSS styles
+             * Build SCSS/CSS styles
              */
             async _buildStyles(): Promise<void> {
                 const stylesDir = _config.build?.styles?.input || './app/style';
@@ -145,20 +145,20 @@
                         mkdirSync(outputDir, { recursive: true });
                     }
 
-                    // Collect all SASS/SCSS files
-                    const sassFiles = this._collectSassFiles(stylesDir);
+                    // Collect all SCSS files (no .sass files)
+                    const scssFiles = this._collectScssFiles(stylesDir);
 
-                    if (sassFiles.length === 0) {
-                        console.log('⚠️  No SASS/SCSS files found, skipping CSS build');
+                    if (scssFiles.length === 0) {
+                        console.log('⚠️  No SCSS files found, skipping CSS build');
                         return;
                     }
 
-                    // console.log(`📝 Found ${sassFiles.length} SASS file(s)`);
+                    // console.log(`📝 Found ${scssFiles.length} SCSS file(s)`);
 
-                    // Compile all SASS files and combine
+                    // Compile all SCSS files and combine
                     let combinedCSS = '';
 
-                    for (const file of sassFiles) {
+                    for (const file of scssFiles) {
                         try {
                             const result = sass.compile(file, {
                                 style: _config.build?.minify ? 'compressed' : 'expanded',
@@ -187,7 +187,7 @@
                             `${fullOutputPath}.map`,
                             JSON.stringify({
                                 version: 3,
-                                sources: sassFiles.map(f => relative(outputDir, f)),
+                                sources: scssFiles.map(f => relative(outputDir, f)),
                                 names: [],
                                 mappings: ''
                             }),
@@ -202,9 +202,9 @@
             },
 
             /**
-             * Recursively collect all SASS/SCSS files
+             * Recursively collect all SCSS files (excluding .sass)
              */
-            _collectSassFiles(dir: string): string[] {
+            _collectScssFiles(dir: string): string[] {
                 const files: string[] = [];
 
                 if (!existsSync(dir)) {
@@ -219,11 +219,11 @@
 
                     if (stat.isDirectory()) {
                         // Recursively scan subdirectories
-                        files.push(...this._collectSassFiles(fullPath));
+                        files.push(...this._collectScssFiles(fullPath));
                     } else if (stat.isFile()) {
                         const ext = extname(entry);
-                        // Include .sass, .scss files but skip partials (starting with _)
-                        if ((ext === '.sass' || ext === '.scss') && !entry.startsWith('_')) {
+                        // Only include .scss files, skip partials (starting with _)
+                        if (ext === '.scss' && !entry.startsWith('_')) {
                             files.push(fullPath);
                         }
                     }
@@ -261,11 +261,11 @@
                     });
                 }
 
-                // Watch SASS files
+                // Watch SCSS files
                 const stylesDir = './app/style';
                 if (existsSync(stylesDir)) {
                     watch(stylesDir, { recursive: true }, async (eventType, filename) => {
-                        if (filename && (filename.endsWith('.sass') || filename.endsWith('.scss'))) {
+                        if (filename && filename.endsWith('.scss')) {
                             console.log(`🔄 ${filename} changed, rebuilding CSS...`);
                             try {
                                 await this._buildStyles();

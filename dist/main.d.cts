@@ -303,13 +303,13 @@ declare function client(config: ClientConfig): {
      */
     _buildJS(): Promise<void>;
     /**
-     * Build SASS/CSS styles
+     * Build SCSS/CSS styles
      */
     _buildStyles(): Promise<void>;
     /**
-     * Recursively collect all SASS/SCSS files
+     * Recursively collect all SCSS files (excluding .sass)
      */
-    _collectSassFiles(dir: string): string[];
+    _collectScssFiles(dir: string): string[];
     /**
      * Watch mode for development
      */
