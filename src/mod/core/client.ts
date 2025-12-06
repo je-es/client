@@ -10,9 +10,6 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
-    import * as sass                                from 'sass';
-    import { readdirSync, statSync, writeFileSync, existsSync, mkdirSync, watch } from 'fs';
-    import { join, extname, relative, dirname }     from 'path';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -147,6 +144,10 @@
                 const outputPath = _config.build?.styles?.output || './static/client.css';
 
                 // Dynamically import server-side modules only when building
+                const sass = await import('sass');
+                const { writeFileSync, existsSync, mkdirSync } = await import('fs');
+                const { join, relative, dirname } = await import('path');
+
                 const outputDir = dirname(outputPath);
                 const outputFile = outputPath.split('/').pop() || 'client.css';
 
@@ -222,6 +223,9 @@
              * Recursively collect all SCSS files (excluding .sass)
              */
             async _collectScssFiles(dir: string): Promise<string[]> {
+                const { readdirSync, statSync, existsSync } = await import('fs');
+                const { join, extname } = await import('path');
+
                 const files: string[] = [];
 
                 if (!existsSync(dir)) {
@@ -258,6 +262,11 @@
 
                 // Initial build
                 await this.build();
+
+                // Watch for file changes
+                const { watch } = await import('fs');
+                const { dirname } = await import('path');
+                const { existsSync } = await import('fs');
 
                 // Watch TypeScript files
                 if (_config.build?.entry) {
