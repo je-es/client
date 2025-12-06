@@ -309,7 +309,7 @@ declare function client(config: ClientConfig): {
     /**
      * Recursively collect all SCSS files (excluding .sass)
      */
-    _collectScssFiles(dir: string): string[];
+    _collectScssFiles(dir: string): Promise<string[]>;
     /**
      * Watch mode for development
      */

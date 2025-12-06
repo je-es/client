@@ -10,9 +10,6 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
-    import * as sass                                from 'sass';
-    import { readdirSync, statSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-    import { join, extname, relative, dirname }     from 'path';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -31,6 +28,7 @@
         sourcemap?: 'none' | 'external' | 'inline';
         splitting?: boolean;
         naming?: { entry?: string };
+        external?: string[];
     }
 
     interface BunBuildResult {
@@ -114,6 +112,20 @@
                     naming          : {
                         entry       : _config.build.output.substring(_config.build.output.lastIndexOf('/') + 1),
                     },
+                    // Exclude server-side packages from browser bundle
+                    external        : [
+                        'sass',
+                        'fs',
+                        'path',
+                        'url',
+                        'util',
+                        'stream',
+                        'buffer',
+                        'events',
+                        'crypto',
+                        'os',
+                        'child_process',
+                    ],
                 });
 
                 if (!result.success) {
@@ -130,6 +142,12 @@
             async _buildStyles(): Promise<void> {
                 const stylesDir = _config.build?.styles?.input || './app/style';
                 const outputPath = _config.build?.styles?.output || './static/client.css';
+
+                // Dynamically import server-side modules only when building
+                const { default: sass } = await import('sass');
+                const { writeFileSync, existsSync, mkdirSync } = await import('fs');
+                const { join, relative, dirname } = await import('path');
+
                 const outputDir = dirname(outputPath);
                 const outputFile = outputPath.split('/').pop() || 'client.css';
 
@@ -148,7 +166,7 @@
                     // Collect all SCSS files (no .sass files)
                     const scssFiles = this._collectScssFiles(stylesDir);
 
-                    if (scssFiles.length === 0) {
+                    if ((await scssFiles).length === 0) {
                         console.log('⚠️  No SCSS files found, skipping CSS build');
                         return;
                     }
@@ -158,7 +176,7 @@
                     // Compile all SCSS files and combine
                     let combinedCSS = '';
 
-                    for (const file of scssFiles) {
+                    for (const file of await scssFiles) {
                         try {
                             const result = sass.compile(file, {
                                 style: _config.build?.minify ? 'compressed' : 'expanded',
@@ -187,7 +205,7 @@
                             `${fullOutputPath}.map`,
                             JSON.stringify({
                                 version: 3,
-                                sources: scssFiles.map(f => relative(outputDir, f)),
+                                sources: (await scssFiles).map(f => relative(outputDir, f)),
                                 names: [],
                                 mappings: ''
                             }),
@@ -204,7 +222,10 @@
             /**
              * Recursively collect all SCSS files (excluding .sass)
              */
-            _collectScssFiles(dir: string): string[] {
+            async _collectScssFiles(dir: string): Promise<string[]> {
+                const { readdirSync, statSync, existsSync } = await import('fs');
+                const { join, extname } = await import('path');
+
                 const files: string[] = [];
 
                 if (!existsSync(dir)) {
@@ -219,7 +240,7 @@
 
                     if (stat.isDirectory()) {
                         // Recursively scan subdirectories
-                        files.push(...this._collectScssFiles(fullPath));
+                        files.push(...await this._collectScssFiles(fullPath));
                     } else if (stat.isFile()) {
                         const ext = extname(entry);
                         // Only include .scss files, skip partials (starting with _)
@@ -244,6 +265,8 @@
 
                 // Watch for file changes
                 const { watch } = await import('fs');
+                const { dirname } = await import('path');
+                const { existsSync } = await import('fs');
 
                 // Watch TypeScript files
                 if (_config.build?.entry) {
