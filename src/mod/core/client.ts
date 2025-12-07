@@ -177,7 +177,7 @@
                     const fullOutputPath = join(outputDir, outputFile);
                     writeFileSync(fullOutputPath, result.css, 'utf-8');
 
-                    console.log(`💅 Styles compiled to ${fullOutputPath}`);
+                    // console.log(`💅 Styles compiled to ${fullOutputPath}`);
 
                     // Write source map if enabled
                     if (_config.build?.sourcemap && result.sourceMap) {
