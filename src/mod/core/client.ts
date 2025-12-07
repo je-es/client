@@ -140,20 +140,23 @@
              * Build SCSS/CSS styles
              */
             async _buildStyles(): Promise<void> {
-                const stylesDir = _config.build?.styles?.input || './app/style';
+                const stylesDir = _config.build?.styles?.input || './app/gui/style';
                 const outputPath = _config.build?.styles?.output || './static/client.css';
 
                 // Dynamically import server-side modules only when building
                 const sass = await import('sass');
                 const { writeFileSync, existsSync, mkdirSync } = await import('fs');
-                const { join, relative, dirname } = await import('path');
+                const { join, dirname } = await import('path');
 
                 const outputDir = dirname(outputPath);
                 const outputFile = outputPath.split('/').pop() || 'client.css';
 
-                // Check if styles directory exists
-                if (!existsSync(stylesDir)) {
-                    console.log('⚠️  No style directory found, skipping CSS build');
+                // Main SCSS entry file
+                const mainScssFile = join(stylesDir, 'index.scss');
+
+                // Check if main entry file exists
+                if (!existsSync(mainScssFile)) {
+                    console.log('⚠️  No index.scss found, skipping CSS build');
                     return;
                 }
 
@@ -163,52 +166,24 @@
                         mkdirSync(outputDir, { recursive: true });
                     }
 
-                    // Collect all SCSS files (no .sass files)
-                    const scssFiles = this._collectScssFiles(stylesDir);
+                    // Compile the main SCSS file (it will automatically include all @use imports)
+                    const result = sass.compile(mainScssFile, {
+                        style: _config.build?.minify ? 'compressed' : 'expanded',
+                        sourceMap: _config.build?.sourcemap ? true : false,
+                        loadPaths: [stylesDir], // Allow SCSS to resolve @use paths
+                    });
 
-                    if ((await scssFiles).length === 0) {
-                        console.log('⚠️  No SCSS files found, skipping CSS build');
-                        return;
-                    }
-
-                    // console.log(`📝 Found ${scssFiles.length} SCSS file(s)`);
-
-                    // Compile all SCSS files and combine
-                    let combinedCSS = '';
-
-                    for (const file of await scssFiles) {
-                        try {
-                            const result = sass.compile(file, {
-                                style: _config.build?.minify ? 'compressed' : 'expanded',
-                                sourceMap: _config.build?.sourcemap ? true : false,
-                            });
-
-                            combinedCSS += `\n/* ${relative(stylesDir, file)} */\n`;
-                            combinedCSS += result.css;
-                            combinedCSS += '\n';
-
-                        } catch (sassError) {
-                            console.error(`❌ Error compiling ${file}:`, sassError);
-                            throw sassError;
-                        }
-                    }
-
-                    // Write combined CSS
+                    // Write compiled CSS
                     const fullOutputPath = join(outputDir, outputFile);
-                    writeFileSync(fullOutputPath, combinedCSS, 'utf-8');
+                    writeFileSync(fullOutputPath, result.css, 'utf-8');
 
-                    // console.log(`💅 Styles compiled to ${fullOutputPath}`);
+                    console.log(`💅 Styles compiled to ${fullOutputPath}`);
 
                     // Write source map if enabled
-                    if (_config.build?.sourcemap) {
+                    if (_config.build?.sourcemap && result.sourceMap) {
                         writeFileSync(
                             `${fullOutputPath}.map`,
-                            JSON.stringify({
-                                version: 3,
-                                sources: (await scssFiles).map(f => relative(outputDir, f)),
-                                names: [],
-                                mappings: ''
-                            }),
+                            JSON.stringify(result.sourceMap),
                             'utf-8'
                         );
                     }
