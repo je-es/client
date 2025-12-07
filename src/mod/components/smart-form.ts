@@ -29,6 +29,7 @@
         onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
         onSuccess?: (data: unknown) => void;
         onError?: (error: unknown) => void;
+        onValidationError?: (errors: Record<string, string>) => void;  // ← NEW
         submitButton?: {
             label?: string;
             loadingLabel?: string;
@@ -181,6 +182,7 @@
          */
         validateForm(): boolean {
             let isValid = true;
+            const errors: Record<string, string> = {};
 
             for (const field of this.fields) {
                 const error = this.validateField(field, this.formData[field.name]);
@@ -189,10 +191,17 @@
 
                 if (error) {
                     isValid = false;
+                    errors[field.name] = error;
                 }
             }
 
             this.update();
+
+            // Call validation error callback
+            if (!isValid && this.props.onValidationError) {
+                this.props.onValidationError(errors);
+            }
+
             return isValid;
         }
 

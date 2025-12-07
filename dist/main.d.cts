@@ -517,6 +517,7 @@ interface FormConfig {
     onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
     onSuccess?: (data: unknown) => void;
     onError?: (error: unknown) => void;
+    onValidationError?: (errors: Record<string, string>) => void;
     submitButton?: {
         label?: string;
         loadingLabel?: string;
