@@ -29,7 +29,7 @@
         onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
         onSuccess?: (data: unknown) => void;
         onError?: (error: unknown) => void;
-        onValidationError?: (errors: Record<string, string>) => void;  // ← NEW
+        onValidationError?: (errors: Record<string, string>) => void;
         submitButton?: {
             label?: string;
             loadingLabel?: string;
@@ -265,7 +265,6 @@
          */
         renderField(field: FormField): VNode {
             const value = this.formData[field.name] || '';
-            const showError = field.touched && field.error;
 
             switch (field.type) {
                 case 'textarea': {
@@ -284,7 +283,6 @@
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
                             ></textarea>
-                            ${showError ? html`<span class="error">${field.error}</span>` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -312,7 +310,6 @@
                                 <option value="">Select...</option>
                                 ${optionNodes}
                             </select>
-                            ${showError ? html`<span class="error">${field.error}</span>` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -334,7 +331,6 @@
                                 />
                                 ${field.label || ''}
                             </label>
-                            ${showError ? html`<span class="error">${field.error}</span>` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -355,7 +351,6 @@
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
                             />
-                            ${showError ? html`<span class="error">${field.error}</span>` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -425,12 +420,6 @@
                     outline: none;
                     border-color: #3b82f6;
                     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                }
-                .form-field .error {
-                    display: block;
-                    margin-top: 0.25rem;
-                    color: #ef4444;
-                    font-size: 0.875rem;
                 }
                 .form-field-checkbox label {
                     display: flex;

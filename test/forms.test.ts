@@ -63,7 +63,11 @@
             input.dispatchEvent(new Event('blur'));
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeTruthy();
+            // Check internal field state
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'username');
+            expect(field.error).toBeTruthy();
+            expect(field.error).toContain('required');
         });
 
         test('should validate email format', async () => {
@@ -80,21 +84,22 @@
 
             await form.mount(container);
 
-            // const input = container.querySelector('input[name="email"]') as HTMLInputElement;
-
             // Set invalid email
             form.handleChange('email', 'invalid-email');
             form.handleBlur('email');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeTruthy();
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'email');
+            expect(field.error).toBeTruthy();
+            expect(field.error).toContain('email');
 
-            // Set valid email
+            // Set valid email - should clear errors
             form.handleChange('email', 'test@example.com');
             form.handleBlur('email');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeFalsy();
+            expect(field.error).toBeFalsy();
         });
 
         test('should validate minLength', async () => {
@@ -115,13 +120,17 @@
             form.handleBlur('password');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeTruthy();
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'password');
+            expect(field.error).toBeTruthy();
+            expect(field.error).toContain('8');
 
+            // Valid length - should clear errors
             form.handleChange('password', 'longenough');
             form.handleBlur('password');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeFalsy();
+            expect(field.error).toBeFalsy();
         });
 
         test('should validate maxLength', async () => {
@@ -142,7 +151,10 @@
             form.handleBlur('bio');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeTruthy();
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'bio');
+            expect(field.error).toBeTruthy();
+            expect(field.error).toContain('10');
         });
 
         test('should validate pattern', async () => {
@@ -163,13 +175,16 @@
             form.handleBlur('phone');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeTruthy();
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'phone');
+            expect(field.error).toBeTruthy();
 
+            // Valid pattern - should clear errors
             form.handleChange('phone', '1234567890');
             form.handleBlur('phone');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.querySelector('.error')).toBeFalsy();
+            expect(field.error).toBeFalsy();
         });
 
         test('should handle custom validation', async () => {
@@ -195,7 +210,10 @@
             form.handleBlur('age');
             await new Promise(resolve => setTimeout(resolve, 20));
 
-            expect(container.textContent).toContain('Must be 18 or older');
+            const fields = (form as any).fields;
+            const field = fields.find((f: any) => f.name === 'age');
+            expect(field.error).toBeTruthy();
+            expect(field.error).toBe('Must be 18 or older');
         });
 
         test('should handle form submission', async () => {
@@ -249,11 +267,11 @@
             await form.mount(container);
 
             const input = container.querySelector('input[name="testfield"]') as HTMLInputElement;
-            
+
             // Verify the field exists
             expect(input).toBeTruthy();
             expect(input.name).toBe('testfield');
-            
+
             // Check the form's internal field configuration has disabled set
             const fields = (form as any).fields;
             const field = fields.find((f: any) => f.name === 'testfield');
@@ -310,6 +328,7 @@
 
         test('should prevent submission with validation errors', async () => {
             let submitted = false;
+            let validationErrorsCalled = false;
 
             const form = new SmartFormComponent({
                 fields: [
@@ -321,6 +340,10 @@
                 ],
                 onSubmit: async () => {
                     submitted = true;
+                },
+                onValidationError: (errors) => {
+                    validationErrorsCalled = true;
+                    expect(errors.email).toBeTruthy();
                 }
             });
 
@@ -332,6 +355,7 @@
             await new Promise(resolve => setTimeout(resolve, 20));
 
             expect(submitted).toBe(false);
+            expect(validationErrorsCalled).toBe(true);
         });
     });
 
