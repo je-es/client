@@ -261,16 +261,35 @@
         }
 
         /**
+         * Render label with optional icon
+         */
+        renderLabel(field: FormField): VNode | string {
+            if (!field.label && !field.icon) return '';
+
+            if (field.icon) {
+                return html`
+                    <label for=${field.name}>
+                        <i class="fa ${field.icon}"></i>
+                        ${field.label ? html`<span>${field.label}</span>` : ''}
+                    </label>
+                ` as VNode;
+            }
+
+            return html`<label for=${field.name}>${field.label}</label>` as VNode;
+        }
+
+        /**
          * Render form field
          */
         renderField(field: FormField): VNode {
             const value = this.formData[field.name] || '';
+            const labelNode = this.renderLabel(field);
 
             switch (field.type) {
                 case 'textarea': {
                     return html`
                         <div class="form-field ${field.className || ''}">
-                            ${field.label ? html`<label for=${field.name}>${field.label}</label>` : ''}
+                            ${labelNode}
                             <textarea
                                 id=${field.name}
                                 name=${field.name}
@@ -283,6 +302,9 @@
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
                             ></textarea>
+                            ${field.error && field.touched ? html`
+                                <span class="field-error">${field.error}</span>
+                            ` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -295,7 +317,7 @@
 
                     return html`
                         <div class="form-field ${field.className || ''}">
-                            ${field.label ? html`<label for=${field.name}>${field.label}</label>` : ''}
+                            ${labelNode}
                             <select
                                 id=${field.name}
                                 name=${field.name}
@@ -310,6 +332,9 @@
                                 <option value="">Select...</option>
                                 ${optionNodes}
                             </select>
+                            ${field.error && field.touched ? html`
+                                <span class="field-error">${field.error}</span>
+                            ` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -329,8 +354,12 @@
                                         this.handleChange(field.name, target.checked);
                                     }}
                                 />
+                                ${field.icon ? html`<i class="fa ${field.icon}"></i>` : ''}
                                 ${field.label || ''}
                             </label>
+                            ${field.error && field.touched ? html`
+                                <span class="field-error">${field.error}</span>
+                            ` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -338,19 +367,23 @@
                 default: {
                     return html`
                         <div class="form-field ${field.className || ''}">
-                            ${field.label ? html`<label for="${field.name}">${field.label}</label>` : ''}
+                            ${labelNode}
                             <input
                                 type="${field.type || 'text'}"
                                 id="${field.name}"
                                 name="${field.name}"
                                 placeholder="${field.placeholder || ''}"
                                 value="${String(value)}"
+                                disabled="${field.disabled || this.isSubmitting}"
                                 oninput=${(e: Event) => {
                                     const target = e.target as HTMLInputElement;
                                     this.handleChange(field.name, target.value);
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
                             />
+                            ${field.error && field.touched ? html`
+                                <span class="field-error">${field.error}</span>
+                            ` : ''}
                         </div>
                     ` as VNode;
                 }
@@ -401,9 +434,14 @@
                     margin-bottom: 1rem;
                 }
                 .form-field label {
-                    display: block;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
                     margin-bottom: 0.5rem;
                     font-weight: 500;
+                }
+                .form-field label i {
+                    color: #6b7280;
                 }
                 .form-field input,
                 .form-field textarea,
@@ -428,6 +466,12 @@
                 }
                 .form-field-checkbox input[type="checkbox"] {
                     width: auto;
+                }
+                .field-error {
+                    display: block;
+                    color: #dc2626;
+                    font-size: 0.875rem;
+                    margin-top: 0.25rem;
                 }
                 .submit-button {
                     width: 100%;

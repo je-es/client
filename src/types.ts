@@ -149,6 +149,7 @@
     export interface FormFieldConfig {
         name: string;
         label?: string;
+        icon?: string;
         type?: string;
         placeholder?: string;
         value?: unknown;

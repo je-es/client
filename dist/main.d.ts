@@ -105,6 +105,7 @@ interface FormFieldOption {
 interface FormFieldConfig {
     name: string;
     label?: string;
+    icon?: string;
     type?: string;
     placeholder?: string;
     value?: unknown;
@@ -562,6 +563,10 @@ declare class SmartFormComponent extends Component<FormConfig> {
      * Handle form submission
      */
     handleSubmit(event: Event): Promise<void>;
+    /**
+     * Render label with optional icon
+     */
+    renderLabel(field: FormField): VNode | string;
     /**
      * Render form field
      */
