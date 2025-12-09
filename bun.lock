@@ -5,7 +5,7 @@
       "name": "@je-es/client",
       "dependencies": {
         "@je-es/capi": "^0.0.4",
-        "@je-es/vdom": "^0.0.1",
+        "@je-es/vdom": "0.0.2",
         "sass": "^1.94.2",
       },
       "devDependencies": {
@@ -109,7 +109,7 @@
 
     "@je-es/capi": ["@je-es/capi@0.0.4", "", { "peerDependencies": { "bun": ">=1.3.3" } }, "sha512-f+6/rNXqYqhK+duz0uAQOG7+DQRxko3kc3XjvCyTAPuaGg9WbrXtw9zuy687fW42CoM6NiXJvV8vn85hDIlKnQ=="],
 
-    "@je-es/vdom": ["@je-es/vdom@0.0.1", "", { "peerDependencies": { "bun": ">=1.3.3" } }, "sha512-QBKsfi3QwZjF2aY+oJpMxmMbfI6tK9PLFpohxiHRY1CjFr0eq09EUlWRlTm5HDppADMh++4YktClnPbjPBgj0g=="],
+    "@je-es/vdom": ["@je-es/vdom@0.0.2", "", { "peerDependencies": { "bun": ">=1.3.3" } }, "sha512-ZkUfxtiWbtJw7uoBuJ4vQzA6lkkMeR8cGY4ttBedmyl9VBw4fSlNpytqp1ki6Y4BR6cg6KIrD6LfcPY/Lt8meg=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
