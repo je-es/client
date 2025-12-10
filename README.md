@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.1.7-black"/>
+    <img src="https://img.shields.io/badge/v-0.1.8-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/client/actions/workflows/ci.yml/badge.svg" alt="CI" />
@@ -142,6 +142,8 @@
             }
         }
         ```
+
+        > **_Components that manage their own DOM directly (like Notifications and ItemsLoader) shouldn't use @state decorators for properties that trigger re-renders. The @state decorator is designed for components that rely on virtual DOM patching. When you manage DOM directly with appendChild/remove, re-renders destroy your manual DOM changes._**
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 

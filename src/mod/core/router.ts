@@ -70,7 +70,8 @@
         async push(path: string, state?: Record<string, unknown>): Promise<void> {
             if (this.isNavigating) {
                 // console.warn('Navigation already in progress');
-                return;
+                this.isNavigating = false;
+                // return;
             }
 
             this._internalPath = path;
