@@ -417,71 +417,53 @@
 
     - ### Internationalization (i18n)
 
-        ```typescript
-        import { t, setLanguage, getCurrentLanguage, loadTranslations, createTranslator } from '@je-es/client';
+        **Quick Setup in Client Config:**
 
-        // Load translations
-        loadTranslations({
-            en: {
-                hello: 'Hello',
-                welcome: 'Welcome to {app_name}',
-                goodbye: 'Goodbye',
-                message: '{greeting}, my name is {name}'
+        ```typescript
+        import { client } from '@je-es/client';
+
+        const app = client({
+            // ... other config
+            i18n: {
+                defaultLanguage: 'en',
+                supportedLanguages: ['en', 'ar'],
+                staticPath: 'static/i18n'
             },
-            ar: {
-                hello: 'مرحبا',
-                welcome: 'مرحبا بك في {app_name}',
-                goodbye: 'وداعا',
-                message: '{greeting}، اسمي {name}'
-            }
         });
+
+        // Initialize in browser
+        app.init();
+        ```
+
+        **Use `t()` Anywhere:**
+
+        ```typescript
+        import { t, setLanguage, getCurrentLanguage, loadFromUrl, createTranslator } from '@je-es/client';
+
+        // After client.init(), you can use t() directly everywhere!
+        console.log(t('hello')); // Works globally!
+        console.log(t('welcome', { app_name: 'MyApp' }));
 
         // Set language
         setLanguage('ar');
         console.log(getCurrentLanguage()); // 'ar'
 
-        // Simple translation
-        console.log(t('hello')); // 'مرحبا'
-
-        // Translation with parameters
-        console.log(t('welcome', { app_name: 'MyApp' })); // 'مرحبا بك في MyApp'
-
-        // Nested parameter replacement with translation keys
-        console.log(t('message', { greeting: 'hello', name: 'John' })); // 'مرحبا، اسمي John'
-
-        // Translate with specific language temporarily
-        console.log(t('hello')); // 'مرحبا'
-        console.log(tLang('hello', 'en')); // 'Hello' (temporarily uses English)
-        console.log(t('hello')); // 'مرحبا' (still Arabic)
+        // Load translations from URL
+        await loadFromUrl('/static/i18n/*.json');
 
         // Listen to language changes
         const unsubscribe = createTranslator(() => {
-            console.log('Language changed to:', getCurrentLanguage());
-            // Re-render your component here
+            console.log('Language changed!');
         });
+        ```
 
-        // Load translations from JSON files
-        const enTranslations = await import('./static/i18n/en.json');
-        const arTranslations = await import('./static/i18n/ar.json');
-        loadTranslations({
-            en: enTranslations,
-            ar: arTranslations
-        });
+        **In Components:**
 
-        // Load translations from URL (pattern-based)
-        await loadFromUrl('/static/i18n/*.json');
+        ```typescript
+        import { Component, html } from '@je-es/client';
+        import { t, setLanguage, createTranslator } from '@je-es/client';
 
-        // Load specific language files from URL
-        await loadFromUrl([
-            '/static/i18n/en.json',
-            '/static/i18n/ar.json',
-            '/static/i18n/fr.json'
-        ]);
-
-        // In components
         class MultiLanguageComponent extends Component {
-            @state language = 'en';
-
             render() {
                 return html`
                     <div>
@@ -496,10 +478,8 @@
                 `;
             }
 
-            async connectedCallback() {
+            connectedCallback() {
                 super.connectedCallback();
-                // Load translations from URL when component mounts
-                await loadFromUrl('/static/i18n/*.json');
                 // Subscribe to language changes
                 this.unsubscribe = createTranslator(() => this.refresh());
             }
@@ -513,14 +493,40 @@
         }
         ```
 
+        **Advanced Usage:**
+
+        ```typescript
+        import { t, tLang, loadLanguage, getSupportedLanguages, hasKey } from '@je-es/client';
+
+        // Translate with specific language temporarily
+        console.log(t('hello')); // Current language
+        console.log(tLang('hello', 'en')); // Temporarily use English
+
+        // Load specific language
+        loadLanguage('fr', {
+            hello: 'Bonjour',
+            welcome: 'Bienvenue dans {app_name}'
+        });
+
+        // Check supported languages
+        console.log(getSupportedLanguages()); // ['en', 'ar', 'fr']
+
+        // Check if key exists
+        if (hasKey('custom_key')) {
+            console.log(t('custom_key'));
+        }
+        ```
+
         > **_Features:_**
+        > - **Global singleton**: Configure once via `client()`, use `t()` everywhere
         > - **localStorage support**: Automatically saves language preference
         > - **Parameter replacement**: Replace placeholders with dynamic values
         > - **Nested translations**: Use translation keys as parameter values
         > - **Reactive updates**: Listen to language changes with `createTranslator()`
-        > - **Fallback language**: Falls back to English if translation is missing
+        > - **Fallback language**: Falls back to configured default language if translation is missing
         > - **Multiple languages**: Support for unlimited languages
         > - **URL loading**: Load translations from remote JSON files with patterns or specific URLs
+        > - **Runtime loading**: Load translations dynamically at runtime via `loadFromUrl()`
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 
@@ -605,6 +611,11 @@
                 root: '#app',
                 mode: 'spa',
             },
+            i18n: {
+                defaultLanguage: 'en',
+                supportedLanguages: ['en', 'ar'],
+                staticPath: 'static/i18n'
+            },
             router: {
                 mode: 'history',
                 base: '/',
@@ -624,6 +635,11 @@
             app.init();
         }
         ```
+
+        > **_i18n Configuration:_**
+        > - `defaultLanguage`: The default language code (default: 'en')
+        > - `supportedLanguages`: Array of supported language codes
+        > - `staticPath`: Base path for translation files (default: 'static/i18n')
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 

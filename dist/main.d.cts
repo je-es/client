@@ -48,6 +48,13 @@ interface DevToolsConfig {
     showRouterInfo?: boolean;
     showStateChanges?: boolean;
 }
+type LanguageCode = string;
+type TranslationSet = Record<string, Record<string, string>>;
+interface I18nConfig {
+    defaultLanguage?: LanguageCode;
+    supportedLanguages?: LanguageCode[];
+    staticPath?: string;
+}
 interface ClientConfig {
     build?: BuildConfig;
     app?: AppConfig;
@@ -55,6 +62,7 @@ interface ClientConfig {
     forms?: FormsConfig;
     router?: RouterConfig;
     api?: ApiConfig;
+    i18n?: I18nConfig;
     devTools?: DevToolsConfig;
 }
 interface Route {
@@ -683,14 +691,6 @@ declare const utils: {
     safeJsonParse: typeof safeJsonParse;
 };
 
-type LanguageCode = string;
-type TranslationSet = Record<string, Record<string, string>>;
-interface I18nConfig {
-    defaultLanguage?: LanguageCode;
-    supportedLanguages?: LanguageCode[];
-    staticPath?: string;
-}
-
 declare class I18nManager {
     private translations;
     private currentLanguage;
@@ -771,6 +771,22 @@ declare class I18nManager {
      */
     createTranslator(updateCallback: () => void): () => void;
     /**
+     * Load translations from URL(s)
+     * Supports patterns like '/static/i18n/*.json' or specific URLs
+     *
+     * @example
+     * // Load from a pattern
+     * await loadFromUrl('/static/i18n/*.json');
+     *
+     * @example
+     * // Load specific language files
+     * await loadFromUrl(['/static/i18n/en.json', '/static/i18n/ar.json']);
+     *
+     * @param urlPattern String pattern or array of URLs
+     * @returns Promise that resolves when all translations are loaded
+     */
+    loadFromUrl(urlPattern: string | string[]): Promise<void>;
+    /**
      * Get language from localStorage
      */
     private getStoredLanguage;
@@ -783,7 +799,6 @@ declare class I18nManager {
      */
     private dispatchLanguageChangeEvent;
 }
-
 /**
  * Global translation function
  * @param key Translation key
@@ -839,6 +854,22 @@ declare function getTranslations(): Record<string, string>;
  * @returns Function to unsubscribe from language changes
  */
 declare function createTranslator(updateCallback: () => void): () => void;
+/**
+ * Load translations from URL(s)
+ * Supports patterns like '/static/i18n/*.json' or specific URLs
+ *
+ * @example
+ * // Load from a pattern
+ * await loadFromUrl('/static/i18n/*.json');
+ *
+ * @example
+ * // Load specific language files
+ * await loadFromUrl(['/static/i18n/en.json', '/static/i18n/ar.json']);
+ *
+ * @param urlPattern String pattern or array of URLs
+ * @returns Promise that resolves when all translations are loaded
+ */
+declare function loadFromUrl(urlPattern: string | string[]): Promise<void>;
 /**
  * Initialize the i18n manager with config
  * @param config I18n configuration
@@ -1010,4 +1041,4 @@ declare class UpdateScheduler {
 }
 declare const scheduler: UpdateScheduler;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type DevToolsConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, type LanguageCode, type NavigationGuard, Provider, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type TranslationSet, type ValidationRule, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createStore, createTranslator, css, debounce, deepClone, deepMerge, formatDate, getCurrentLanguage, getSupportedLanguages, getTranslations, hasKey, initializeI18n, isBrowser, isEmpty, kebabCase, loadLanguage, loadTranslations, parseQuery, pascalCase, router, safeJsonParse, scheduler, setHookContext, setLanguage, sleep, state, stringifyQuery, t, tLang, throttle, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type DevToolsConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, type LanguageCode, type NavigationGuard, Provider, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type TranslationSet, type ValidationRule, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createStore, createTranslator, css, debounce, deepClone, deepMerge, formatDate, getCurrentLanguage, getSupportedLanguages, getTranslations, hasKey, initializeI18n, isBrowser, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadTranslations, parseQuery, pascalCase, router, safeJsonParse, scheduler, setHookContext, setLanguage, sleep, state, stringifyQuery, t, tLang, throttle, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };

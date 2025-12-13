@@ -10,6 +10,7 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
+    import { initializeI18n }                       from '../i18n';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -282,6 +283,15 @@
              */
             init(): void {
                 // console.log('🚀 Initializing @je-es/client...');
+
+                // Configure i18n
+                if (_config.i18n) {
+                    initializeI18n({
+                        defaultLanguage: _config.i18n.defaultLanguage,
+                        supportedLanguages: _config.i18n.supportedLanguages,
+                        staticPath: _config.i18n.staticPath
+                    });
+                }
 
                 // Configure API client
                 if (_config.api) {

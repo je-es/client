@@ -82,6 +82,16 @@
         showStateChanges?: boolean;
     }
 
+    export type LanguageCode = string;
+
+    export type TranslationSet = Record<string, Record<string, string>>;
+
+    export interface I18nConfig {
+        defaultLanguage?: LanguageCode;
+        supportedLanguages?: LanguageCode[];
+        staticPath?: string;
+    }
+
     export interface ClientConfig {
         build?: BuildConfig;
         app?: AppConfig;
@@ -89,6 +99,7 @@
         forms?: FormsConfig;
         router?: RouterConfig;
         api?: ApiConfig;
+        i18n?: I18nConfig;
         devTools?: DevToolsConfig;
     }
 
