@@ -24,6 +24,24 @@
     // Utilities
     export { utils, debounce, throttle, classNames, formatDate, deepClone, deepMerge, uniqueId, sleep, isEmpty, capitalize, kebabCase, camelCase, pascalCase, truncate, parseQuery, stringifyQuery, clamp, isBrowser, safeJsonParse } from './mod/help';
 
+    // i18n (Internationalization)
+    export { 
+        t, 
+        tLang,
+        setLanguage, 
+        getCurrentLanguage, 
+        loadLanguage,
+        loadTranslations, 
+        getSupportedLanguages,
+        hasKey, 
+        getTranslations,
+        createTranslator,
+        initializeI18n,
+        type TranslationSet,
+        type LanguageCode,
+        type I18nConfig
+    } from './mod/i18n';
+
     // Context API
     export {
         Context,

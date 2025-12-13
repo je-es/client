@@ -1,0 +1,42 @@
+{
+  "hello": {
+    "en": "Hello",
+    "ar": "مرحبا"
+  },
+  "welcome": {
+    "en": "Welcome to {app_name}",
+    "ar": "مرحبا بك في {app_name}"
+  },
+  "goodbye": {
+    "en": "Goodbye",
+    "ar": "وداعا"
+  },
+  "thank_you": {
+    "en": "Thank you",
+    "ar": "شكرا لك"
+  },
+  "ok": {
+    "en": "OK",
+    "ar": "حسنا"
+  },
+  "cancel": {
+    "en": "Cancel",
+    "ar": "الغاء"
+  },
+  "yes": {
+    "en": "Yes",
+    "ar": "نعم"
+  },
+  "no": {
+    "en": "No",
+    "ar": "لا"
+  },
+  "loading": {
+    "en": "Loading...",
+    "ar": "جاري التحميل..."
+  },
+  "error": {
+    "en": "Error",
+    "ar": "خطأ"
+  }
+}

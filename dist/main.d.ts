@@ -683,6 +683,168 @@ declare const utils: {
     safeJsonParse: typeof safeJsonParse;
 };
 
+type LanguageCode = string;
+type TranslationSet = Record<string, Record<string, string>>;
+interface I18nConfig {
+    defaultLanguage?: LanguageCode;
+    supportedLanguages?: LanguageCode[];
+    staticPath?: string;
+}
+
+declare class I18nManager {
+    private translations;
+    private currentLanguage;
+    private defaultLanguage;
+    private supportedLanguages;
+    private cachePath;
+    constructor(config?: I18nConfig);
+    /**
+     * Load translations for a specific language
+     * @param lang Language code (e.g., 'en', 'ar', 'fr')
+     * @param translations Translation object
+     */
+    loadLanguage(lang: LanguageCode, translations: Record<string, string>): void;
+    /**
+     * Load all translations from static files
+     * @param translations Object with language codes as keys and translation objects as values
+     */
+    loadTranslations(translations: TranslationSet): void;
+    /**
+     * Set the current language
+     * @param lang Language code
+     */
+    setLanguage(lang: LanguageCode): void;
+    /**
+     * Get the current language
+     */
+    getLanguage(): LanguageCode;
+    /**
+     * Get all supported languages
+     */
+    getSupportedLanguages(): LanguageCode[];
+    /**
+     * Translate a key with smart parameter replacement
+     * Supports nested translation keys as parameter values
+     *
+     * @example
+     * // Simple translation
+     * t('hello') // => "Hello" or "مرحبا" depending on current language
+     *
+     * @example
+     * // With parameters
+     * t('welcome', { app_name: 'MyApp' })
+     * // => "Welcome to MyApp"
+     *
+     * @example
+     * // With nested translation keys as parameters
+     * t('greeting', { salutation: 'hello' })
+     * // => "Say Hello to everyone"
+     *
+     * @param key Translation key
+     * @param params Optional parameters for replacement
+     * @returns Translated string with replaced parameters
+     */
+    t(key: string, params?: Record<string, string>): string;
+    /**
+     * Translate with a specific language (overrides current language temporarily)
+     *
+     * @param key Translation key
+     * @param lang Language code
+     * @param params Optional parameters
+     * @returns Translated string
+     */
+    tLang(key: string, lang: LanguageCode, params?: Record<string, string>): string;
+    /**
+     * Get all translations for current language
+     */
+    getTranslations(): Record<string, string>;
+    /**
+     * Check if a translation key exists
+     * @param key Translation key
+     * @returns true if key exists in current or default language
+     */
+    hasKey(key: string): boolean;
+    /**
+     * Create a reactive translation function that listens to language changes
+     * @param updateCallback Callback function to execute when language changes
+     * @returns Function to unsubscribe from language changes
+     */
+    createTranslator(updateCallback: () => void): () => void;
+    /**
+     * Get language from localStorage
+     */
+    private getStoredLanguage;
+    /**
+     * Store language in localStorage
+     */
+    private storeLanguage;
+    /**
+     * Dispatch language change event
+     */
+    private dispatchLanguageChangeEvent;
+}
+
+/**
+ * Global translation function
+ * @param key Translation key
+ * @param params Optional parameters
+ * @returns Translated string
+ */
+declare function t(key: string, params?: Record<string, string>): string;
+/**
+ * Translate with a specific language (overrides current language temporarily)
+ * @param key Translation key
+ * @param lang Language code
+ * @param params Optional parameters
+ * @returns Translated string
+ */
+declare function tLang(key: string, lang: string, params?: Record<string, string>): string;
+/**
+ * Set the current language globally
+ * @param lang Language code
+ */
+declare function setLanguage(lang: string): void;
+/**
+ * Get the current language
+ */
+declare function getCurrentLanguage(): string;
+/**
+ * Load translations for a specific language
+ * @param lang Language code
+ * @param translations Translation object
+ */
+declare function loadLanguage(lang: string, translations: Record<string, string>): void;
+/**
+ * Load all translations
+ * @param translations The translations object
+ */
+declare function loadTranslations(translations: Record<string, Record<string, string>>): void;
+/**
+ * Get all supported languages
+ */
+declare function getSupportedLanguages(): string[];
+/**
+ * Check if a translation key exists
+ * @param key The translation key to check
+ * @returns Whether the key exists
+ */
+declare function hasKey(key: string): boolean;
+/**
+ * Get all translations for current language
+ */
+declare function getTranslations(): Record<string, string>;
+/**
+ * Create a reactive translation function that listens to language changes
+ * @param updateCallback Callback function to execute when language changes
+ * @returns Function to unsubscribe from language changes
+ */
+declare function createTranslator(updateCallback: () => void): () => void;
+/**
+ * Initialize the i18n manager with config
+ * @param config I18n configuration
+ */
+declare function initializeI18n(config?: Record<string, unknown>): I18nManager;
+
 type ContextSubscriber<T> = (value: T) => void;
 interface ProviderProps<T> {
     context: Context<T>;
@@ -848,4 +1010,4 @@ declare class UpdateScheduler {
 }
 declare const scheduler: UpdateScheduler;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type DevToolsConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type NavigationGuard, Provider, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type ValidationRule, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createStore, css, debounce, deepClone, deepMerge, formatDate, isBrowser, isEmpty, kebabCase, parseQuery, pascalCase, router, safeJsonParse, scheduler, setHookContext, sleep, state, stringifyQuery, throttle, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type DevToolsConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, type LanguageCode, type NavigationGuard, Provider, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type TranslationSet, type ValidationRule, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createStore, createTranslator, css, debounce, deepClone, deepMerge, formatDate, getCurrentLanguage, getSupportedLanguages, getTranslations, hasKey, initializeI18n, isBrowser, isEmpty, kebabCase, loadLanguage, loadTranslations, parseQuery, pascalCase, router, safeJsonParse, scheduler, setHookContext, setLanguage, sleep, state, stringifyQuery, t, tLang, throttle, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
