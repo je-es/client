@@ -374,11 +374,38 @@
     }
 
     /**
-     * Set the current language globally
+     * Set the current language globally (synchronous)
      * @param lang Language code
      */
     export function setLanguage(lang: string): void {
         getI18n().setLanguage(lang);
+    }
+
+    /**
+     * Set the current language globally with lazy-loading support (asynchronous)
+     * Use this when you want to lazy-load language files on demand
+     * @param lang Language code
+     * @param staticPath Path to language files for lazy-loading
+     * @returns Promise that resolves when language is loaded and set
+     */
+    export async function setLanguageAsync(lang: string, staticPath?: string): Promise<void> {
+        const manager = getI18n();
+        
+        // Check if language is already loaded
+        const currentTranslations = manager.getTranslations();
+        const isLanguageLoaded = Object.keys(currentTranslations).length > 0;
+        
+        if (!isLanguageLoaded && staticPath) {
+            // Language not loaded yet, try to lazy-load it
+            const baseUrl = staticPath.endsWith('/') ? staticPath : staticPath + '/';
+            try {
+                await manager.loadFromUrl(baseUrl + `${lang}.json`);
+            } catch (error) {
+                console.warn(`Failed to lazy-load language: ${lang}`, error);
+            }
+        }
+        
+        manager.setLanguage(lang);
     }
 
     /**
@@ -473,11 +500,12 @@
     }
 
     /**
-     * Setup i18n: Initialize, load translations, and return ready promise
-     * Simple one-call setup that handles everything
+     * Setup i18n: Initialize and load the currently selected language
+     * Uses stored language from localStorage if available, otherwise uses default
+     * Other languages are lazy-loaded when setLanguage is called
      *
      * @param config I18n configuration
-     * @returns Promise that resolves when i18n is ready
+     * @returns Promise that resolves when the selected language is loaded
      *
      * @example
      * await setupI18n({
@@ -485,22 +513,47 @@
      *     supportedLanguages: ['en', 'ar'],
      *     staticPath: 'static/i18n'
      * });
-     * console.log(t('hello')); // Ready to use!
+     * console.log(t('hello')); // Ready to use in current language!
      */
     export async function setupI18n(config: I18nConfig): Promise<void> {
         // Initialize i18n with config
         const manager = new I18nManager(config);
         i18nInstance = manager;
 
-        // Load translations
-        if (config.staticPath && config.supportedLanguages) {
+        // Load the CURRENT language (stored or default)
+        if (config.staticPath) {
             const baseUrl = config.staticPath.endsWith('/')
                 ? config.staticPath
                 : config.staticPath + '/';
-            const urlPattern = baseUrl + '*.json';
+            
+            // Get the language to load: stored language or default
+            const langToLoad = manager.getLanguage();
+            const langUrl = baseUrl + `${langToLoad}.json`;
 
-            await manager.loadFromUrl(urlPattern);
+            await manager.loadFromUrl(langUrl);
         }
+    }
+
+    /**
+     * Load a specific language file on-demand
+     * Use this when user switches to a language that hasn't been loaded yet
+     *
+     * @param lang Language code (e.g., 'ar', 'fr')
+     * @param staticPath Optional path to language files (defaults to 'static/i18n')
+     * @returns Promise that resolves when language is loaded
+     *
+     * @example
+     * // User switches to Arabic - load it first if not already loaded
+     * await loadLanguageFile('ar');
+     * setLanguage('ar');
+     */
+    export async function loadLanguageFile(lang: string, staticPath?: string): Promise<void> {
+        const manager = getI18n();
+        const path = staticPath || 'static/i18n';
+        const baseUrl = path.endsWith('/') ? path : path + '/';
+        const langUrl = baseUrl + lang + '.json';
+
+        await manager.loadFromUrl(langUrl);
     }
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

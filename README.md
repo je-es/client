@@ -424,7 +424,8 @@
 
         // In your app initialization (browser.ts or similar)
         async function initializeApp() {
-            // 1. Setup i18n first - loads all translations
+            // 1. Setup i18n - loads the currently selected language
+            //    (from localStorage if user visited before, otherwise default)
             await setupI18n({
                 defaultLanguage: 'en',
                 supportedLanguages: ['en', 'ar'],
@@ -447,44 +448,66 @@
         **Use `t()` Anywhere:**
 
         ```typescript
-        import { t, setLanguage, getCurrentLanguage, loadFromUrl, createTranslator } from '@je-es/client';
+        import { t, setLanguage, loadLanguageFile, getCurrentLanguage } from '@je-es/client';
 
         // After setupI18n() resolves, you can use t() directly everywhere!
-        console.log(t('hello')); // Works globally!
+        console.log(t('hello')); // Works in current language!
         console.log(t('welcome', { app_name: 'MyApp' }));
 
-        // Set language
-        setLanguage('ar');
-        console.log(getCurrentLanguage()); // 'ar'
+        // Switch language with lazy-loading (loads file only when needed)
+        async function selectLanguage(lang: string) {
+            await loadLanguageFile(lang);  // Load language on-demand
+            setLanguage(lang);
+            console.log(getCurrentLanguage()); // New language
+        }
+        ```
 
-        // Load additional translations at runtime
-        await loadFromUrl('/static/i18n/*.json');
+        **Lazy-Loading Languages for Performance:**
 
-        // Listen to language changes
-        const unsubscribe = createTranslator(() => {
-            console.log('Language changed!');
+        `setupI18n()` loads the **currently selected language** on page load:
+        - **First visit**: Loads default language (e.g., en.json)
+        - **After switching**: Loads new language on-demand
+        - **Returning user**: Loads their previously selected language from localStorage
+
+        ```typescript
+        // Returning user who previously selected Arabic
+        // Page loads with ar.json (their choice) - fast! ⚡
+        await setupI18n({
+            defaultLanguage: 'en',
+            supportedLanguages: ['en', 'ar', 'fr'],
+            staticPath: 'static/i18n'
         });
+        
+        // User clicks to switch language
+        await loadLanguageFile('fr');  // Load only when needed
+        setLanguage('fr');
         ```
 
         **In Components:**
 
         ```typescript
         import { Component, html } from '@je-es/client';
-        import { t, setLanguage, createTranslator } from '@je-es/client';
+        import { t, setLanguage, loadLanguageFile, createTranslator } from '@je-es/client';
 
         class MultiLanguageComponent extends Component {
             render() {
                 return html`
                     <div>
                         <h1>${t('welcome', { app_name: 'JE-ES' })}</h1>
-                        <button onclick=${() => { setLanguage('en'); this.refresh(); }}>
+                        <button onclick=${() => this.switchLang('en')}>
                             English
                         </button>
-                        <button onclick=${() => { setLanguage('ar'); this.refresh(); }}>
+                        <button onclick=${() => this.switchLang('ar')}>
                             العربية
                         </button>
                     </div>
                 `;
+            }
+
+            async switchLang(lang: string) {
+                await loadLanguageFile(lang);
+                setLanguage(lang);
+                this.refresh();
             }
 
             connectedCallback() {
@@ -527,15 +550,15 @@
         ```
 
         > **_Features:_**
-        > - **Simple setup**: Call `setupI18n()` once in your app initialization
+        > - **Lazy-loaded languages**: Default language loads on init, others load on-demand
+        > - **Fast page load**: Only default language file is downloaded initially
         > - **localStorage support**: Automatically saves language preference
         > - **Parameter replacement**: Replace placeholders with dynamic values
         > - **Nested translations**: Use translation keys as parameter values
         > - **Reactive updates**: Listen to language changes with `createTranslator()`
         > - **Fallback language**: Falls back to configured default language if translation is missing
         > - **Multiple languages**: Support for unlimited languages
-        > - **URL loading**: Load translations from remote JSON files with patterns or specific URLs
-        > - **Runtime loading**: Load translations dynamically at runtime via `loadFromUrl()`
+        > - **URL loading**: Load translations from remote JSON files or manually with `loadLanguageFile()`
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 
