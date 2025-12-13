@@ -1,4 +1,4 @@
-// src/mod/i18n.ts
+// src/mod/services/i18n.ts
 //
 // Made with ❤️ by Maysara.
 
@@ -6,7 +6,7 @@
 
 // ╔════════════════════════════════════════ CORE ════════════════════════════════════════╗
 
-    import type { TranslationSet, LanguageCode, I18nConfig } from '../types';
+    import type { TranslationSet, LanguageCode, I18nConfig } from '../../types';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 

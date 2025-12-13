@@ -19,7 +19,7 @@
         getTranslations,
         createTranslator,
         initializeI18n
-    } from '../src/mod/i18n';
+    } from '../src/mod/services/i18n';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 

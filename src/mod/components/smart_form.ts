@@ -1,4 +1,4 @@
-// src/mod/components/smart-form.ts
+// src/mod/components/smart_form.ts
 //
 // Made with ❤️ by Maysara.
 
@@ -398,7 +398,7 @@
 
             return html`
                 <form
-                    class="smart-form ${this.props.className || ''}"
+                    class="smart_form ${this.props.className || ''}"
                     onsubmit=${(e: Event) => this.handleSubmit(e)}
                 >
                     ${this.submitError ? html`
@@ -427,7 +427,7 @@
 
         styles(): string {
             return css`
-                .smart-form {
+                .smart_form {
                     max-width: 100%;
                 }
                 .form-field {

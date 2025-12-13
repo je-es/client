@@ -10,7 +10,7 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
-    import { initializeI18n }                       from '../i18n';
+    import { initializeI18n }                       from '../services/i18n';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 

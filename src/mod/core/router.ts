@@ -30,7 +30,7 @@
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
 
-// ╔════════════════════════════════════════ TYPE ════════════════════════════════════════╗
+// ╔════════════════════════════════════════ CORE ════════════════════════════════════════╗
 
     export class Router {
         private routes: RouteConfig[] = [];
@@ -570,5 +570,92 @@
     }
 
     export const router = new Router();
+
+// ╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+// ╔════════════════════════════════════════ HELP ════════════════════════════════════════╗
+
+    /**
+     * Navigate to a new route
+     */
+    export function navigate(path: string, replace: boolean = false): void {
+        console.log(`Navigating to ${path}`);
+        if (replace) {
+            router.replace(path);
+        } else {
+            router.push(path);
+        }
+
+        // Dispatch custom event for components listening to navigation
+        window.dispatchEvent(new CustomEvent('navigation', {
+            detail: { path }
+        }));
+    }
+
+    /**
+     * Navigate back in history
+     */
+    export function goBack(): void {
+        router.back();
+    }
+
+    /**
+     * Navigate forward in history
+     */
+    export function goForward(): void {
+        window.history.forward();
+    }
+
+    /**
+     * Get current path
+     */
+    export function getCurrentPath(): string {
+        return window.location.pathname;
+    }
+
+    /**
+     * Check if current path matches
+     */
+    export function isCurrentPath(path: string): boolean {
+        return getCurrentPath() === path;
+    }
+
+    /**
+     * Check if current path starts with
+     */
+    export function isCurrentPathPrefix(prefix: string): boolean {
+        return getCurrentPath().startsWith(prefix);
+    }
+
+    /**
+     * Reload current route
+     */
+    export function reloadRoute(): void {
+        const currentPath = getCurrentPath();
+        navigate(currentPath, true);
+    }
+
+    /**
+     * Navigate with query params
+     */
+    export function navigateWithQuery(path: string, params: Record<string, string>): void {
+        const query = new URLSearchParams(params).toString();
+        navigate(`${path}?${query}`);
+    }
+
+    /**
+     * Get query parameters
+     */
+    export function getQueryParams(): URLSearchParams {
+        return new URLSearchParams(window.location.search);
+    }
+
+    /**
+     * Get single query parameter
+     */
+    export function getQueryParam(key: string): string | null {
+        return getQueryParams().get(key);
+    }
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
