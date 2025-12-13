@@ -453,11 +453,11 @@
             if (this.routerOutlet) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 this.routerOutlet.innerHTML = `
-                    <div style="padding: 2rem; background: #fee; border: 2px solid #c00;
+                    <div style="padding: 2rem; background: #121212ff; border: 2px solid #303030ff;
                                 border-radius: 8px; margin: 2rem;">
-                        <h2 style="color: #c00; margin-top: 0;">⚠️ Failed to Load Component</h2>
-                        <p><strong>Route:</strong> ${path}</p>
-                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        <h2 style="color: rgba(208, 31, 31, 1); margin-top: 0;">⚠️ Failed to Load Component</h2>
+                        <p style="color: #a3a3a3ff;"><strong>Route:</strong> ${path}</p>
+                        <p style="color: #a3a3a3ff;"><strong>Error:</strong> ${errorMessage}</p>
                     </div>
                 `;
             }

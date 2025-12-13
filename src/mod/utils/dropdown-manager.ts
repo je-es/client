@@ -8,7 +8,7 @@
 
     type DropdownId = string;
 
-    interface DropdownConfig {
+    export interface DropdownConfig {
         id: DropdownId;
         element: HTMLElement;
         parentId?: DropdownId;  // Parent dropdown ID for hierarchy

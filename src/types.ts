@@ -99,7 +99,6 @@
         forms?: FormsConfig;
         router?: RouterConfig;
         api?: ApiConfig;
-        i18n?: I18nConfig;
         devTools?: DevToolsConfig;
     }
 

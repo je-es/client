@@ -10,7 +10,6 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
-    import { initializeI18n }                       from '../services/i18n';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -281,17 +280,11 @@
              * Initialize the client runtime
              * This runs in the browser
              */
-            init(): void {
-                // console.log('🚀 Initializing @je-es/client...');
+            async init(): Promise<void> {
+                console.log('🚀 [client] Initializing @je-es/client...');
 
-                // Configure i18n
-                if (_config.i18n) {
-                    initializeI18n({
-                        defaultLanguage: _config.i18n.defaultLanguage,
-                        supportedLanguages: _config.i18n.supportedLanguages,
-                        staticPath: _config.i18n.staticPath
-                    });
-                }
+                // i18n is now auto-loaded on DOM ready, no need to do it here
+                // But we keep this for backward compatibility if someone wants to force-reload
 
                 // Configure API client
                 if (_config.api) {

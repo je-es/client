@@ -127,7 +127,6 @@ interface ClientConfig {
     forms?: FormsConfig;
     router?: RouterConfig;
     api?: ApiConfig;
-    i18n?: I18nConfig;
     devTools?: DevToolsConfig;
 }
 interface Route {
@@ -689,7 +688,7 @@ declare function client(config: ClientConfig): {
      * Initialize the client runtime
      * This runs in the browser
      */
-    init(): void;
+    init(): Promise<void>;
     /**
      * Enable development tools
      */
@@ -735,6 +734,7 @@ declare class I18nManager {
     private defaultLanguage;
     private supportedLanguages;
     private cachePath;
+    private readyListeners;
     constructor(config?: I18nConfig);
     /**
      * Load translations for a specific language
@@ -825,6 +825,14 @@ declare class I18nManager {
      */
     loadFromUrl(urlPattern: string | string[]): Promise<void>;
     /**
+     * Register a callback for when i18n is ready
+     */
+    onReady(callback: () => void): void;
+    /**
+     * Notify all listeners that i18n is ready
+     */
+    private notifyReady;
+    /**
      * Get language from localStorage
      */
     private getStoredLanguage;
@@ -837,12 +845,6 @@ declare class I18nManager {
      */
     private dispatchLanguageChangeEvent;
 }
-/**
- * Initialize the i18n manager
- * @param config I18n configuration
- * @returns I18nManager instance
- */
-declare function initI18n(config?: I18nConfig): I18nManager;
 /**
  * Get the global i18n instance
  */
@@ -898,12 +900,6 @@ declare function hasKey(key: string): boolean;
  */
 declare function getTranslations(): Record<string, string>;
 /**
- * Create a reactive translation function that listens to language changes
- * @param updateCallback Callback function to execute when language changes
- * @returns Function to unsubscribe from language changes
- */
-declare function createTranslator(updateCallback: () => void): () => void;
-/**
  * Load translations from URL(s)
  * Supports patterns like '/static/i18n/*.json' or specific URLs
  *
@@ -920,10 +916,21 @@ declare function createTranslator(updateCallback: () => void): () => void;
  */
 declare function loadFromUrl(urlPattern: string | string[]): Promise<void>;
 /**
- * Initialize the i18n manager with config
+ * Setup i18n: Initialize, load translations, and return ready promise
+ * Simple one-call setup that handles everything
+ *
  * @param config I18n configuration
+ * @returns Promise that resolves when i18n is ready
+ *
+ * @example
+ * await setupI18n({
+ *     defaultLanguage: 'en',
+ *     supportedLanguages: ['en', 'ar'],
+ *     staticPath: 'static/i18n'
+ * });
+ * console.log(t('hello')); // Ready to use!
  */
-declare function initializeI18n(config?: Record<string, unknown>): I18nManager;
+declare function setupI18n(config: I18nConfig): Promise<void>;
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 interface ToastMessage {
@@ -1522,6 +1529,13 @@ declare class VisibilityObserver {
 declare function observeVisibility(element: Element, callback: (entry: IntersectionObserverEntry) => void): () => void;
 
 type DropdownId = string;
+interface DropdownConfig {
+    id: DropdownId;
+    element: HTMLElement;
+    parentId?: DropdownId;
+    onOpen?: () => void;
+    onClose?: () => void;
+}
 declare class DropdownManager {
     private static instance;
     private dropdowns;
@@ -1617,4 +1631,4 @@ declare function formatTimeAgo(timestamp: string | Date): string;
  */
 declare function getTimeTitle(timestamp: string | Date): string;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, DropdownManager, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getDropdownManager, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initI18n, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, sleep, state, stringifyQuery, t, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, type DropdownConfig, DropdownManager, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getDropdownManager, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setupI18n, sleep, state, stringifyQuery, t, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };

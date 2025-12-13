@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/client/actions/workflows/ci.yml/badge.svg" alt="CI" />
-    <img src="https://img.shields.io/badge/coverage-90%25-brightgreen" alt="Test Coverage" />
+    <!-- <img src="https://img.shields.io/badge/coverage-70%25-brightgreen" alt="Test Coverage" /> -->
     <img src="https://img.shields.io/github/issues/je-es/client?style=flat" alt="Github Repo Issues" />
     <img src="https://img.shields.io/github/stars/je-es/client?style=social" alt="GitHub Repo stars" />
 </div>
@@ -417,22 +417,31 @@
 
     - ### Internationalization (i18n)
 
-        **Quick Setup in Client Config:**
+        **Setup in App Initialization:**
 
         ```typescript
-        import { client } from '@je-es/client';
+        import { setupI18n, t } from '@je-es/client';
 
-        const app = client({
-            // ... other config
-            i18n: {
+        // In your app initialization (browser.ts or similar)
+        async function initializeApp() {
+            // 1. Setup i18n first - loads all translations
+            await setupI18n({
                 defaultLanguage: 'en',
                 supportedLanguages: ['en', 'ar'],
                 staticPath: 'static/i18n'
-            },
-        });
+            });
 
-        // Initialize in browser
-        app.init();
+            // 2. Now safe to use t() and render components
+            const app = new MyApp();
+            await app.init();
+        }
+
+        // Call when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
         ```
 
         **Use `t()` Anywhere:**
@@ -440,7 +449,7 @@
         ```typescript
         import { t, setLanguage, getCurrentLanguage, loadFromUrl, createTranslator } from '@je-es/client';
 
-        // After client.init(), you can use t() directly everywhere!
+        // After setupI18n() resolves, you can use t() directly everywhere!
         console.log(t('hello')); // Works globally!
         console.log(t('welcome', { app_name: 'MyApp' }));
 
@@ -448,7 +457,7 @@
         setLanguage('ar');
         console.log(getCurrentLanguage()); // 'ar'
 
-        // Load translations from URL
+        // Load additional translations at runtime
         await loadFromUrl('/static/i18n/*.json');
 
         // Listen to language changes
@@ -502,7 +511,7 @@
         console.log(t('hello')); // Current language
         console.log(tLang('hello', 'en')); // Temporarily use English
 
-        // Load specific language
+        // Load specific language dynamically
         loadLanguage('fr', {
             hello: 'Bonjour',
             welcome: 'Bienvenue dans {app_name}'
@@ -518,7 +527,7 @@
         ```
 
         > **_Features:_**
-        > - **Global singleton**: Configure once via `client()`, use `t()` everywhere
+        > - **Simple setup**: Call `setupI18n()` once in your app initialization
         > - **localStorage support**: Automatically saves language preference
         > - **Parameter replacement**: Replace placeholders with dynamic values
         > - **Nested translations**: Use translation keys as parameter values
@@ -611,11 +620,6 @@
                 root: '#app',
                 mode: 'spa',
             },
-            i18n: {
-                defaultLanguage: 'en',
-                supportedLanguages: ['en', 'ar'],
-                staticPath: 'static/i18n'
-            },
             router: {
                 mode: 'history',
                 base: '/',
@@ -636,10 +640,7 @@
         }
         ```
 
-        > **_i18n Configuration:_**
-        > - `defaultLanguage`: The default language code (default: 'en')
-        > - `supportedLanguages`: Array of supported language codes
-        > - `staticPath`: Base path for translation files (default: 'static/i18n')
+        > **_Note:_** i18n is now configured directly in your app initialization via `setupI18n()` instead of in the client config. See the [Internationalization section](#internationalization-i18n) for details.
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 
