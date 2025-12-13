@@ -415,6 +415,115 @@
 
         <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
 
+    - ### Internationalization (i18n)
+
+        ```typescript
+        import { t, setLanguage, getCurrentLanguage, loadTranslations, createTranslator } from '@je-es/client';
+
+        // Load translations
+        loadTranslations({
+            en: {
+                hello: 'Hello',
+                welcome: 'Welcome to {app_name}',
+                goodbye: 'Goodbye',
+                message: '{greeting}, my name is {name}'
+            },
+            ar: {
+                hello: 'مرحبا',
+                welcome: 'مرحبا بك في {app_name}',
+                goodbye: 'وداعا',
+                message: '{greeting}، اسمي {name}'
+            }
+        });
+
+        // Set language
+        setLanguage('ar');
+        console.log(getCurrentLanguage()); // 'ar'
+
+        // Simple translation
+        console.log(t('hello')); // 'مرحبا'
+
+        // Translation with parameters
+        console.log(t('welcome', { app_name: 'MyApp' })); // 'مرحبا بك في MyApp'
+
+        // Nested parameter replacement with translation keys
+        console.log(t('message', { greeting: 'hello', name: 'John' })); // 'مرحبا، اسمي John'
+
+        // Translate with specific language temporarily
+        console.log(t('hello')); // 'مرحبا'
+        console.log(tLang('hello', 'en')); // 'Hello' (temporarily uses English)
+        console.log(t('hello')); // 'مرحبا' (still Arabic)
+
+        // Listen to language changes
+        const unsubscribe = createTranslator(() => {
+            console.log('Language changed to:', getCurrentLanguage());
+            // Re-render your component here
+        });
+
+        // Load translations from JSON files
+        const enTranslations = await import('./static/i18n/en.json');
+        const arTranslations = await import('./static/i18n/ar.json');
+        loadTranslations({
+            en: enTranslations,
+            ar: arTranslations
+        });
+
+        // Load translations from URL (pattern-based)
+        await loadFromUrl('/static/i18n/*.json');
+
+        // Load specific language files from URL
+        await loadFromUrl([
+            '/static/i18n/en.json',
+            '/static/i18n/ar.json',
+            '/static/i18n/fr.json'
+        ]);
+
+        // In components
+        class MultiLanguageComponent extends Component {
+            @state language = 'en';
+
+            render() {
+                return html`
+                    <div>
+                        <h1>${t('welcome', { app_name: 'JE-ES' })}</h1>
+                        <button onclick=${() => { setLanguage('en'); this.refresh(); }}>
+                            English
+                        </button>
+                        <button onclick=${() => { setLanguage('ar'); this.refresh(); }}>
+                            العربية
+                        </button>
+                    </div>
+                `;
+            }
+
+            async connectedCallback() {
+                super.connectedCallback();
+                // Load translations from URL when component mounts
+                await loadFromUrl('/static/i18n/*.json');
+                // Subscribe to language changes
+                this.unsubscribe = createTranslator(() => this.refresh());
+            }
+
+            disconnectedCallback() {
+                super.disconnectedCallback();
+                if (this.unsubscribe) {
+                    this.unsubscribe();
+                }
+            }
+        }
+        ```
+
+        > **_Features:_**
+        > - **localStorage support**: Automatically saves language preference
+        > - **Parameter replacement**: Replace placeholders with dynamic values
+        > - **Nested translations**: Use translation keys as parameter values
+        > - **Reactive updates**: Listen to language changes with `createTranslator()`
+        > - **Fallback language**: Falls back to English if translation is missing
+        > - **Multiple languages**: Support for unlimited languages
+        > - **URL loading**: Load translations from remote JSON files with patterns or specific URLs
+
+        <div align="center"> <img src="./assets/img/line.png" alt="line" style="display: block; margin-top:20px;margin-bottom:20px;width:500px;"/> <br> </div>
+
     - ### API Integration
 
         ```typescript

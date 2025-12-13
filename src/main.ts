@@ -32,6 +32,7 @@
         getCurrentLanguage, 
         loadLanguage,
         loadTranslations, 
+        loadFromUrl,
         getSupportedLanguages,
         hasKey, 
         getTranslations,

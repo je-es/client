@@ -178,6 +178,65 @@ class I18nManager {
         return () => {};
     }
 
+    /**
+     * Load translations from URL(s)
+     * Supports patterns like '/static/i18n/*.json' or specific URLs
+     * 
+     * @example
+     * // Load from a pattern
+     * await loadFromUrl('/static/i18n/*.json');
+     * 
+     * @example
+     * // Load specific language files
+     * await loadFromUrl(['/static/i18n/en.json', '/static/i18n/ar.json']);
+     * 
+     * @param urlPattern String pattern or array of URLs
+     * @returns Promise that resolves when all translations are loaded
+     */
+    public async loadFromUrl(urlPattern: string | string[]): Promise<void> {
+        const urls = Array.isArray(urlPattern) ? urlPattern : [urlPattern];
+        const translations: TranslationSet = {};
+
+        for (const url of urls) {
+            if (url.includes('*')) {
+                // Handle pattern-based URLs
+                const pattern = url.replace('*.json', '');
+                const langCodes = this.supportedLanguages;
+
+                for (const lang of langCodes) {
+                    try {
+                        const response = await fetch(`${pattern}${lang}.json`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            translations[lang] = data;
+                        }
+                    } catch (error) {
+                        console.warn(`Failed to load translations from ${pattern}${lang}.json:`, error);
+                    }
+                }
+            } else {
+                // Handle specific URLs - extract language code from filename
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Extract language code from URL (e.g., '/static/i18n/en.json' -> 'en')
+                        const langMatch = url.match(/([a-z]{2,3})\.json$/i);
+                        const lang = langMatch ? langMatch[1].toLowerCase() : 'en';
+                        translations[lang] = data;
+                        this.supportedLanguages.add(lang);
+                    }
+                } catch (error) {
+                    console.warn(`Failed to load translations from ${url}:`, error);
+                }
+            }
+        }
+
+        if (Object.keys(translations).length > 0) {
+            this.loadTranslations(translations);
+        }
+    }
+
     // └────────────────────────────────────────────────────────────────────┘
 
     // ┌──────────────────────────────── HELPERS ──────────────────────────────┐

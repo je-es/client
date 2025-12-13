@@ -90,6 +90,25 @@ export function createTranslator(updateCallback: () => void): () => void {
 }
 
 /**
+ * Load translations from URL(s)
+ * Supports patterns like '/static/i18n/*.json' or specific URLs
+ * 
+ * @example
+ * // Load from a pattern
+ * await loadFromUrl('/static/i18n/*.json');
+ * 
+ * @example
+ * // Load specific language files
+ * await loadFromUrl(['/static/i18n/en.json', '/static/i18n/ar.json']);
+ * 
+ * @param urlPattern String pattern or array of URLs
+ * @returns Promise that resolves when all translations are loaded
+ */
+export async function loadFromUrl(urlPattern: string | string[]): Promise<void> {
+    return getI18n().loadFromUrl(urlPattern);
+}
+
+/**
  * Initialize the i18n manager with config
  * @param config I18n configuration
  */
