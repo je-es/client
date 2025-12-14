@@ -17,6 +17,10 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     private _refs;
     private _subscriptions;
     private _memoCache;
+    private _isInitializing;
+    private _skipNextUpdate;
+    private _preservedElements;
+    private _updateInProgress;
     constructor(props?: P, initialState?: S);
     onBeforeMount?(): void | Promise<void>;
     onMount?(): void | Promise<void>;
@@ -37,6 +41,9 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     batchUpdate(updater: () => void): void;
     update(key?: string): void;
     forceUpdate(): void;
+    skipNextUpdate(): void;
+    beginInitialization(): void;
+    endInitialization(): void;
     mount(container: HTMLElement): Promise<void>;
     unmount(): void;
     getRef(name: string): HTMLElement | undefined;
@@ -48,19 +55,16 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     get element(): HTMLElement | null;
     get isMounted(): boolean;
     get isUnmounting(): boolean;
+    get isInitializing(): boolean;
     private _performUpdate;
+    private _preserveComponentMounts;
+    private _restoreComponentMounts;
     private _convertToVDomNode;
     private _createElementFromVNode;
     private _setElementProperty;
     private _handleError;
     private _areDepsEqual;
-    /**
-     * Invalidate all computed property caches (called by decorators)
-     */
     _invalidateAllComputed(): void;
-    /**
-     * Trigger watchers for a property (called by decorators)
-     */
     _triggerWatchers(propertyName: string, newValue: unknown, oldValue: unknown): void;
 }
 interface ComponentConstructor {
@@ -1426,6 +1430,66 @@ declare class ItemsLoader<T = any> extends Component {
 }
 declare function createItemsLoader<T>(config: ItemsLoaderConfig<T>): ItemsLoader<T>;
 
+interface DropdownItemConfig {
+    id?: string;
+    icon?: string;
+    label: string;
+    onclick?: (e: Event) => void;
+    className?: string;
+    disabled?: boolean;
+    selected?: boolean;
+}
+interface DropdownConfig {
+    id: string;
+    trigger: {
+        text?: string;
+        icon?: string;
+        element?: () => any;
+        className?: string;
+    };
+    items: (DropdownItemConfig | 'divider')[];
+    position?: 'left' | 'right';
+    parentId?: string;
+    closeOnItemClick?: boolean;
+    onOpen?: () => void;
+    onClose?: () => void;
+}
+declare class Dropdown extends Component {
+    config: DropdownConfig;
+    isOpen: boolean;
+    private mounted;
+    constructor(config: DropdownConfig);
+    onMount(): void;
+    onUnmount(): void;
+    /**
+     * Public method to set open state (called by manager)
+     */
+    setOpen(open: boolean): void;
+    /**
+     * Manually update the dropdown's DOM without triggering parent re-renders
+     */
+    private updateDOM;
+    /**
+     * Create DOM element from VNode (simplified version)
+     */
+    private createElementFromVNode;
+    /**
+     * Toggle dropdown
+     */
+    toggle(e: Event): void;
+    /**
+     * Handle item click
+     */
+    handleItemClick(item: DropdownItemConfig, e: Event): void;
+    render(): _je_es_vdom.VNode;
+    private renderTrigger;
+    private renderMenu;
+}
+/**
+ * Create a dropdown instance
+ */
+declare function createDropdown(config: DropdownConfig): Dropdown;
+
 /**
  * Debounce function
  * Delays function execution until after wait time
@@ -1570,73 +1634,6 @@ declare class VisibilityObserver {
  */
 declare function observeVisibility(element: Element, callback: (entry: IntersectionObserverEntry) => void): () => void;
 
-type DropdownId = string;
-interface DropdownConfig {
-    id: DropdownId;
-    element: HTMLElement;
-    parentId?: DropdownId;
-    onOpen?: () => void;
-    onClose?: () => void;
-}
-declare class DropdownManager {
-    private static instance;
-    private dropdowns;
-    private openDropdowns;
-    private clickHandler?;
-    private constructor();
-    /**
-     * Get singleton instance
-     */
-    static getInstance(): DropdownManager;
-    /**
-     * Register a dropdown
-     */
-    register(id: DropdownId, element: HTMLElement, callbacks?: {
-        onOpen?: () => void;
-        onClose?: () => void;
-    }, parentId?: DropdownId): void;
-    /**
-     * Unregister a dropdown
-     */
-    unregister(id: DropdownId): void;
-    /**
-     * Open a dropdown and close all others (except parent chain and children)
-     */
-    openDropdown(id: DropdownId): void;
-    /**
-     * Get the parent chain for a dropdown (including itself)
-     */
-    private getParentChain;
-    /**
-     * Close a specific dropdown and any children it has
-     */
-    closeDropdown(id: DropdownId): void;
-    /**
-     * Close all open dropdowns
-     */
-    closeAllDropdowns(): void;
-    /**
-     * Check if a dropdown is open
-     */
-    isOpen(id: DropdownId): boolean;
-    /**
-     * Check if any dropdown is open
-     */
-    isAnyOpen(): boolean;
-    /**
-     * Setup global click handler to close dropdowns when clicking outside
-     */
-    private setupGlobalClickHandler;
-    /**
-     * Cleanup - removes global click handler
-     */
-    destroy(): void;
-}
-/**
- * Convenience function to get dropdown manager instance
- */
-declare function getDropdownManager(): DropdownManager;
-
 /**
  * Formats a timestamp into a relative time string with translation
  * Returns the formatted time and original ISO string as title attribute
@@ -1673,4 +1670,4 @@ declare function formatTimeAgo(timestamp: string | Date): string;
  */
 declare function getTimeTitle(timestamp: string | Date): string;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, type DropdownConfig, DropdownManager, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getDropdownManager, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };

@@ -40,11 +40,11 @@
     export * from './mod/components/smart_form';
     export * from './mod/components/tabbed_view';
     export * from './mod/components/items_loader';
+    export * from './mod/components/dropdown';
 
     // Utilities
     export * from './mod/help';
     export * from './mod/utils/intersection-observer';
-    export * from './mod/utils/dropdown-manager';
     export * from './mod/utils/time_formatter';
 
     // Third-party packages
