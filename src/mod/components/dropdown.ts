@@ -1,15 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/mod/components/dropdown.ts
 //
 // Made with ❤️ by Maysara.
 
 
 
-// ╔════════════════════════════════════════ TYPE ════════════════════════════════════════╗
+// ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement as h } from "@je-es/vdom";
+    import { createElement as h, VNode, VNodeChild } from "@je-es/vdom";
     import { Component } from "../core/component";
-    // import { state } from "../core/decorators";
+
+// ╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+// ╔════════════════════════════════════════ TYPE ════════════════════════════════════════╗
 
     export interface DropdownItemConfig {
         id?: string;
@@ -26,13 +30,14 @@
         trigger: {
             text?: string;
             icon?: string;
-            element?: () => any;
+            element?: () => unknown;
             className?: string;
         };
         items: (DropdownItemConfig | 'divider')[];
         position?: 'left' | 'right';
         parentId?: string; // For nested dropdowns - ID of parent dropdown
         closeOnItemClick?: boolean; // Default: true
+        preventAutoClose?: boolean; // Prevent closing when clicking inside menu (for interactive content)
         onOpen?: () => void;
         onClose?: () => void;
     }
@@ -48,6 +53,7 @@
      * - Only one root dropdown open at a time
      * - Child dropdowns can be open while parent is open
      * - Clicking outside closes all dropdowns
+     * - Clicking inside a dropdown with preventAutoClose keeps it open
      */
     class DropdownManagerSingleton {
         private static instance: DropdownManagerSingleton;
@@ -87,13 +93,15 @@
         }
 
         /**
-         * Open dropdown and close others at same level
+         * Open dropdown and close siblings (but not ancestors or descendants)
          */
         public open(id: string): void {
             const dropdown = this.dropdowns.get(id);
             if (!dropdown) return;
 
-            // Close siblings (dropdowns at same level)
+            // console.log(`📂 Opening dropdown: ${id}`);
+
+            // Close siblings (dropdowns at same level, excluding this one)
             this.closeSiblings(id);
 
             // Actually open the dropdown
@@ -107,6 +115,8 @@
             const dropdown = this.dropdowns.get(id);
             if (!dropdown) return;
 
+            // console.log(`📁 Closing dropdown: ${id}`);
+
             // Close this dropdown
             dropdown.setOpen(false);
 
@@ -118,6 +128,7 @@
          * Close all dropdowns
          */
         public closeAll(): void {
+            // console.log('🗂️ Closing all dropdowns');
             // Close all root dropdowns (those without parents)
             const rootDropdowns = Array.from(this.dropdowns.values())
                 .filter(d => !d.config.parentId);
@@ -140,6 +151,56 @@
         }
 
         /**
+         * Check if dropdown is descendant of another
+         */
+        private isDescendant(descendantId: string, ancestorId: string): boolean {
+            return this.isAncestor(ancestorId, descendantId);
+        }
+
+        /**
+         * Get all ancestor IDs of a dropdown (parent, grandparent, etc.)
+         */
+        private getAncestors(id: string): Set<string> {
+            const ancestors = new Set<string>();
+            let currentId: string | undefined = id;
+
+            while (currentId) {
+                const parentId = this.hierarchy.get(currentId);
+                if (parentId) {
+                    ancestors.add(parentId);
+                    currentId = parentId;
+                } else {
+                    break;
+                }
+            }
+
+            return ancestors;
+        }
+
+        /**
+         * ✨ NEW: Get all descendant IDs of a dropdown (children, grandchildren, etc.)
+         */
+        private getDescendants(id: string): Set<string> {
+            const descendants = new Set<string>();
+
+            const addChildren = (parentId: string) => {
+                // Find all direct children
+                const children = Array.from(this.hierarchy.entries())
+                    .filter(([_, parent]) => parent === parentId)
+                    .map(([childId, _]) => childId);
+
+                // Add each child and recursively add their children
+                children.forEach(childId => {
+                    descendants.add(childId);
+                    addChildren(childId); // Recursive call for grandchildren
+                });
+            };
+
+            addChildren(id);
+            return descendants;
+        }
+
+        /**
          * Close siblings (dropdowns at same hierarchy level)
          */
         private closeSiblings(id: string): void {
@@ -148,10 +209,11 @@
 
             const parentId = dropdown.config.parentId;
 
-            // Get all dropdowns with same parent
+            // Get all dropdowns with same parent (siblings)
             const siblings = Array.from(this.dropdowns.values())
                 .filter(d => d.config.parentId === parentId && d.config.id !== id);
 
+           // console.log(`👥 Closing ${siblings.length} siblings of ${id}`);
             siblings.forEach(sibling => this.close(sibling.config.id));
         }
 
@@ -162,6 +224,7 @@
             const children = Array.from(this.dropdowns.values())
                 .filter(d => d.config.parentId === parentId);
 
+           // console.log(`👶 Closing ${children.length} children of ${parentId}`);
             children.forEach(child => this.close(child.config.id));
         }
 
@@ -173,6 +236,24 @@
         }
 
         /**
+         * Find which dropdown an element belongs to (including nested)
+         */
+        private findDropdownForElement(element: HTMLElement): string | null {
+            // Walk up the DOM tree looking for dropdown containers
+            let current: HTMLElement | null = element;
+
+            while (current && current !== document.body) {
+                const dropdownId = current.getAttribute('data-dropdown-id');
+                if (dropdownId) {
+                    return dropdownId;
+                }
+                current = current.parentElement;
+            }
+
+            return null;
+        }
+
+        /**
          * Setup global click handler
          */
         private setupGlobalClickHandler(): void {
@@ -181,46 +262,76 @@
             this.clickHandler = (e: Event) => {
                 const target = e.target as HTMLElement;
 
-                // Find closest dropdown container (either trigger or menu)
-                const dropdownContainer = target.closest('[data-dropdown-id]');
+               // console.log('🖱️ Global click detected');
 
-                // Find closest dropdown trigger button
-                const dropdownTrigger = target.closest('.je-es-dropdown__trigger');
-
-                // Find closest dropdown menu
-                const dropdownMenu = target.closest('.je-es-dropdown__menu');
-
-                // CRITICAL FIX: Only close dropdowns if:
-                // 1. There are open dropdowns
-                // 2. Click is OUTSIDE all dropdown-related elements
+                // No dropdowns open? Nothing to do
                 if (!this.hasOpenDropdowns()) {
-                    // No dropdowns open, nothing to do
+                   // console.log('  → No open dropdowns, ignoring');
                     return;
                 }
 
-                if (dropdownTrigger || dropdownMenu) {
-                    // Clicked inside a dropdown trigger or menu - let the dropdown handle it
-                    // Don't close other dropdowns here
+                // Find which dropdown (if any) was clicked
+                const clickedDropdownId = this.findDropdownForElement(target);
+
+                if (!clickedDropdownId) {
+                    // Clicked completely outside all dropdowns - close all
+                   // console.log('  → Clicked outside all dropdowns, closing all');
+                    this.closeAll();
                     return;
                 }
 
-                if (dropdownContainer) {
-                    // Clicked somewhere inside a dropdown container (but not trigger/menu)
-                    const clickedId = dropdownContainer.getAttribute('data-dropdown-id');
+               // console.log(`  → Clicked inside dropdown: ${clickedDropdownId}`);
 
-                    // Close all dropdowns that are not ancestors of clicked dropdown
+                // Check if clicked dropdown has preventAutoClose
+                const clickedDropdown = this.dropdowns.get(clickedDropdownId);
+                if (clickedDropdown?.config.preventAutoClose) {
+                   // console.log('  → Dropdown has preventAutoClose, keeping open');
+                    return;
+                }
+
+                // Check if clicked on a trigger button (to let toggle handle it)
+                const clickedOnTrigger = target.closest('.bb_dropdownTrigger');
+                if (clickedOnTrigger) {
+                   // console.log('  → Clicked on trigger, letting toggle handle it');
+                    return;
+                }
+
+                // Clicked inside a dropdown menu but not on trigger
+                const clickedOnMenu = target.closest('.bb_dropdownMenu');
+                if (clickedOnMenu) {
+                    // Get ancestors of clicked dropdown
+                    const ancestors = this.getAncestors(clickedDropdownId);
+
+                    // ✨ FIX: Get all descendants too
+                    const descendants = this.getDescendants(clickedDropdownId);
+
+                    // Close all dropdowns that are NOT:
+                    // 1. The clicked dropdown itself
+                    // 2. Ancestors of the clicked dropdown (parents)
+                    // 3. Descendants of the clicked dropdown (children) ✨ NEW
                     const rootDropdowns = Array.from(this.dropdowns.values())
                         .filter(d => !d.config.parentId);
 
                     rootDropdowns.forEach(rootDropdown => {
-                        // Keep open if clicked dropdown is descendant
-                        if (clickedId && !this.isAncestor(rootDropdown.config.id, clickedId)) {
-                            this.close(rootDropdown.config.id);
+                        const rootId = rootDropdown.config.id;
+
+                    // Keep open if:
+                    // - This is the clicked dropdown
+                    // - This is an ancestor of the clicked dropdown
+                    // - The clicked dropdown is an ancestor of this one (descendant)
+                    const shouldKeepOpen =
+                        rootId === clickedDropdownId ||
+                        ancestors.has(rootId) ||
+                        descendants.has(rootId) || // ✨ NEW: Keep descendants open
+                        this.isDescendant(clickedDropdownId, rootId);
+
+                        if (!shouldKeepOpen) {
+                           // console.log(`  → Closing unrelated dropdown: ${rootId}`);
+                            this.close(rootId);
+                        } else {
+                           // console.log(`  → Keeping related dropdown open: ${rootId}`);
                         }
                     });
-                } else {
-                    // Clicked completely outside all dropdowns - close all
-                    this.closeAll();
                 }
             };
 
@@ -254,6 +365,7 @@
             super();
             this.config = {
                 closeOnItemClick: true,
+                preventAutoClose: false,
                 ...config
             };
         }
@@ -261,20 +373,20 @@
         onMount() {
             this.mounted = true;
             dropdownManager.register(this);
-            console.log(`✅ Dropdown mounted: ${this.config.id}`);
+           // console.log(`✅ Dropdown mounted: ${this.config.id}`);
         }
 
         onUnmount() {
             this.mounted = false;
             dropdownManager.unregister(this.config.id);
-            console.log(`🛑 Dropdown unmounted: ${this.config.id}`);
+           // console.log(`🛑 Dropdown unmounted: ${this.config.id}`);
         }
 
         /**
          * Public method to set open state (called by manager)
          */
         public setOpen(open: boolean) {
-            console.log(`🔄 Dropdown ${this.config.id} setOpen(${open}), current: ${this.isOpen}`);
+           // console.log(`🔄 Dropdown ${this.config.id} setOpen(${open}), current: ${this.isOpen}`);
 
             if (this.isOpen === open) return;
 
@@ -298,25 +410,25 @@
 
             // Update the container class
             if (this.isOpen) {
-                this.element.classList.add('je-es-dropdown--open');
+                this.element.classList.add('bb_dropdown--open');
             } else {
-                this.element.classList.remove('je-es-dropdown--open');
+                this.element.classList.remove('bb_dropdown--open');
             }
 
             // Find the menu container (next sibling of trigger)
-            const trigger = this.element.querySelector('.je-es-dropdown__trigger');
+            const trigger = this.element.querySelector('.bb_dropdownTrigger');
             const menuContainer = trigger?.nextElementSibling;
 
             if (this.isOpen) {
                 // Create and append menu if it doesn't exist
-                if (!menuContainer || !menuContainer.classList.contains('je-es-dropdown__menu')) {
+                if (!menuContainer || !menuContainer.classList.contains('bb_dropdownMenu')) {
                     const menuVNode = this.renderMenu();
                     const menuElement = this.createElementFromVNode(menuVNode);
                     this.element.appendChild(menuElement);
                 }
             } else {
                 // Remove menu if it exists
-                if (menuContainer && menuContainer.classList.contains('je-es-dropdown__menu')) {
+                if (menuContainer && menuContainer.classList.contains('bb_dropdownMenu')) {
                     menuContainer.remove();
                 }
             }
@@ -325,7 +437,7 @@
         /**
          * Create DOM element from VNode (simplified version)
          */
-        private createElementFromVNode(vnode: any): HTMLElement {
+        private createElementFromVNode(vnode: VNode): HTMLElement {
             if (typeof vnode.type === 'string') {
                 const element = document.createElement(vnode.type);
 
@@ -344,7 +456,7 @@
 
                 // Add children
                 if (vnode.children) {
-                    vnode.children.forEach((child: any) => {
+                    vnode.children.forEach((child: VNodeChild) => {
                         if (child === null || child === undefined) return;
                         if (typeof child === 'string' || typeof child === 'number') {
                             element.appendChild(document.createTextNode(String(child)));
@@ -367,7 +479,7 @@
             e.preventDefault();
             e.stopPropagation();
 
-            console.log(`🖱️ Dropdown ${this.config.id} toggle clicked, current state: ${this.isOpen}`);
+           // console.log(`🖱️ Dropdown ${this.config.id} toggle clicked, current state: ${this.isOpen}`);
 
             if (this.isOpen) {
                 dropdownManager.close(this.config.id);
@@ -386,11 +498,13 @@
                 return;
             }
 
-            e.preventDefault();
-            e.stopPropagation();
+           // console.log(`🎯 Item clicked in dropdown ${this.config.id}:`, item.label);
 
-            // Close dropdown if configured to do so
+            // Don't prevent propagation - let it bubble up
+            // But stop it if we're going to close
             if (this.config.closeOnItemClick) {
+                e.preventDefault();
+                e.stopPropagation();
                 dropdownManager.close(this.config.id);
             }
 
@@ -399,13 +513,13 @@
         }
 
         render() {
-            console.log(`🎨 Dropdown ${this.config.id} render(), isOpen: ${this.isOpen}`);
+           // console.log(`🎨 Dropdown ${this.config.id} render(), isOpen: ${this.isOpen}`);
 
             const trigger = this.renderTrigger();
             const menu = this.isOpen ? this.renderMenu() : null;
 
             return h('div', {
-                className: `je-es-dropdown je-es-dropdown--${this.config.position || 'left'} ${this.isOpen ? 'je-es-dropdown--open' : ''}`,
+                className: `bb_dropdown bb_dropdown--${this.config.position || 'left'} ${this.isOpen ? 'bb_dropdown--open' : ''}`,
                 'data-dropdown-id': this.config.id
             },
                 trigger,
@@ -414,10 +528,10 @@
         }
 
         private renderTrigger() {
-            const customElement = this.config.trigger.element?.();
+            const customElement = this.config.trigger.element?.() as VNodeChild;
 
             const triggerClassName = [
-                'je-es-dropdown__trigger',
+                'bb_dropdownTrigger',
                 this.config.trigger.className || ''
             ].filter(Boolean).join(' ');
 
@@ -437,35 +551,42 @@
                 this.config.trigger.icon ? h('i', { className: this.config.trigger.icon }) : null,
                 this.config.trigger.text ? h('span', {}, this.config.trigger.text) : null,
                 h('i', {
-                    className: `je-es-dropdown__arrow fas fa-chevron-down ${this.isOpen ? 'je-es-dropdown__arrow--open' : ''}`
+                    className: `bb_dropdownArrow fas fa-chevron-down ${this.isOpen ? 'bb_dropdownArrow--open' : ''}`
                 })
             );
         }
 
         private renderMenu() {
             return h('div', {
-                className: 'je-es-dropdown__menu',
+                className: 'bb_dropdownMenu',
                 onclick: (e: Event) => {
-                    // Prevent clicks in menu from closing parent
-                    e.stopPropagation();
+                    // Only stop propagation if preventAutoClose is true
+                    if (this.config.preventAutoClose) {
+                        e.stopPropagation();
+                    }
                 }
             },
                 this.config.items.map((item, index) => {
                     if (item === 'divider') {
                         return h('div', {
-                            className: 'je-es-dropdown__divider',
+                            className: 'bb_dropdown__divider',
                             key: `divider-${index}`
                         });
                     }
 
                     const itemClassName = [
-                        'je-es-dropdown__item',
+                        'bb_dropdownItem',
                         item.className || '',
-                        item.disabled ? 'je-es-dropdown__item--disabled' : '',
-                        item.selected ? 'je-es-dropdown__item--selected' : ''
+                        item.disabled ? 'bb_dropdownItem--disabled' : '',
+                        item.selected ? 'bb_dropdownItem--selected' : ''
                     ].filter(Boolean).join(' ');
 
-                    const buttonProps: any = {
+                    const buttonProps: {
+                        key: string;
+                        className: string;
+                        onclick: (e: Event) => void;
+                        disabled?: boolean;
+                    } = {
                         key: item.id || `item-${index}`,
                         className: itemClassName,
                         onclick: (e: Event) => this.handleItemClick(item, e)

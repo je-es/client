@@ -580,7 +580,7 @@
      * Navigate to a new route
      */
     export function navigate(path: string, replace: boolean = false): void {
-        console.log(`Navigating to ${path}`);
+       // console.log(`Navigating to ${path}`);
         if (replace) {
             router.replace(path);
         } else {

@@ -10,7 +10,7 @@
     import { createElement, VNode } from "@je-es/vdom";
     import { Component } from "../core/component";
     import { state } from "../core/decorators";
-    import { t } from "../services/i18n";
+    import { t, tHtml } from "../services/i18n";
     import { FormConfig, SmartForm } from "./smart_form";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
@@ -195,7 +195,9 @@
                                 className: bb_.header.description,
                                 'data-translate': popup.descriptionTranslateKey
                             },
-                                popup.descriptionTranslateKey ? t(popup.descriptionTranslateKey) : popup.description
+                                popup.descriptionTranslateKey
+                                    ? tHtml(popup.descriptionTranslateKey)
+                                    : popup.description
                             ) : null
                         )
                     ),
@@ -206,7 +208,9 @@
                             className: bb_.body.message,
                             'data-translate': popup.messageTranslateKey
                         },
-                            popup.messageTranslateKey ? t(popup.messageTranslateKey) : popup.message
+                            popup.messageTranslateKey
+                                ? tHtml(popup.messageTranslateKey)
+                                : popup.message
                         ) : null,
 
                         // Prompt input

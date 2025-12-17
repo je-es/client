@@ -288,7 +288,7 @@
             switch (field.type) {
                 case 'textarea': {
                     return html`
-                        <div class="form-field ${field.className || ''}">
+                        <div class="bb_formField ${field.className || ''}">
                             ${labelNode}
                             <textarea
                                 id=${field.name}
@@ -301,6 +301,7 @@
                                     this.handleChange(field.name, target.value);
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
+                                class="bb_formFieldTextarea"
                             ></textarea>
                             ${field.error && field.touched ? html`
                                 <span class="field-error">${field.error}</span>
@@ -316,7 +317,7 @@
                     `);
 
                     return html`
-                        <div class="form-field ${field.className || ''}">
+                        <div class="bb_formField ${field.className || ''}">
                             ${labelNode}
                             <select
                                 id=${field.name}
@@ -328,6 +329,7 @@
                                     this.handleChange(field.name, target.value);
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
+                                class="bb_formFieldSelect"
                             >
                                 <option value="">Select...</option>
                                 ${optionNodes}
@@ -341,7 +343,7 @@
 
                 case 'checkbox': {
                     return html`
-                        <div class="form-field form-field-checkbox ${field.className || ''}">
+                        <div class="bb_formField bb_formField-checkbox ${field.className || ''}">
                             <label>
                                 <input
                                     type="checkbox"
@@ -353,6 +355,7 @@
                                         const target = e.target as HTMLInputElement;
                                         this.handleChange(field.name, target.checked);
                                     }}
+                                    class="bb_formFieldCheckbox"
                                 />
                                 ${field.icon ? html`<i class="fa ${field.icon}"></i>` : ''}
                                 ${field.label || ''}
@@ -366,7 +369,7 @@
 
                 default: {
                     return html`
-                        <div class="form-field ${field.className || ''}">
+                        <div class="bb_formField ${field.className || ''}">
                             ${labelNode}
                             <input
                                 type="${field.type || 'text'}"
@@ -380,6 +383,7 @@
                                     this.handleChange(field.name, target.value);
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
+                                class="bb_formFieldInput"
                             />
                             ${field.error && field.touched ? html`
                                 <span class="field-error">${field.error}</span>

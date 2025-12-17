@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/frontend/app/gui/layout/items_loader.ts
 //
 // Made with ❤️ by Maysara.
@@ -7,7 +6,7 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createDOMElement, createElement } from "@je-es/vdom";
+    import { createDOMElement, createElement, VNode, VNodeChild } from "@je-es/vdom";
     import { Component } from "../core/component";
     import { t } from "../services/i18n";
 
@@ -28,43 +27,79 @@
         end: 'bb_itemsLoaderEnd',
         emptyState: 'bb_tabbedviewEmptyState',
         button: 'bb_btn',
+        item: 'bb_itemsLoader-item',
+        formFieldInput: 'bb_formFieldInput',
     };
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
 
 
-// ╔════════════════════════════════════════ CORE ════════════════════════════════════════╗
+// ╔════════════════════════════════════════ TYPES ═══════════════════════════════════════╗
 
     export interface ItemsLoaderConfig<T> {
-        fetchUrl: string | ((page: number, filters: Record<string, any>) => string);
+        // Core configuration
+        fetchUrl: string | ((page: number, filters: Record<string, unknown>) => string);
         renderItem: (item: T, index: number) => HTMLElement;
         pageSize?: number;
+        
+        // Empty state
         emptyStateConfig?: {
             icon: string;
             title: string;
             description: string;
         };
+        
+        // UI text
         loadMoreText?: string;
         loadingText?: string;
         errorText?: string;
         containerClassName?: string;
         itemClassName?: string;
-        filters?: Record<string, any>;
-        onFiltersChange?: (filters: Record<string, any>) => void;
-        onItemClick?: (item: T, index: number) => void;
-        onLoadMore?: (page: number, items: T[]) => void;
-        onError?: (error: Error) => void;
-        initialItems?: T[];
-        extractItems?: (response: any) => T[];
-        extractTotal?: (response: any) => number;
-        getAuthToken?: () => string | null;
-        enableInfiniteScroll?: boolean;
-        scrollThreshold?: number;
+        
+        // Filtering
+        filters?: Record<string, unknown>;
+        onFiltersChange?: (filters: Record<string, unknown>) => void;
+        
+        // Search
         enableSearch?: boolean;
         searchPlaceholder?: string;
         searchFilterKey?: string;
         searchDebounceMs?: number;
+        
+        // Callbacks
+        onItemClick?: (item: T, index: number) => void;
+        onLoadMore?: (page: number, items: T[]) => void;
+        onError?: (error: Error) => void;
+        
+        // Data extraction
+        initialItems?: T[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        extractItems?: (response: any) => T[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        extractTotal?: (response: any) => number;
+        
+        // Authentication
+        getAuthToken?: () => string | null;
+        
+        // Scroll behavior
+        enableInfiniteScroll?: boolean;
+        scrollThreshold?: number;
+        
+        // 🆕 Visibility tracking (for auto-mark-as-read, analytics, etc.)
+        enableVisibilityTracking?: boolean;
+        visibilityThreshold?: number;
+        visibilityRootMargin?: string;
+        onItemsViewed?: (viewedItems: T[]) => Promise<void>;
+        getItemId?: (item: T) => number | string;
+        shouldTrackItem?: (item: T) => boolean; // e.g., only track unread items
+        
+        // 🆕 Dropdown lifecycle (for nested dropdowns)
+        onDropdownOpen?: () => void;
+        onDropdownClose?: () => void;
+        
+        // 🆕 Batch operations
+        onBatchAction?: (action: string, itemIds: (number | string)[]) => Promise<void>;
     }
 
     interface LoadState {
@@ -75,7 +110,13 @@
         total: number;
     }
 
-    export class ItemsLoader<T = any> extends Component {
+// ╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+// ╔════════════════════════════════════════ CORE ════════════════════════════════════════╗
+
+    export class ItemsLoader<T = unknown> extends Component {
         items: T[] = [];
         loadState: LoadState = {
             loading: false,
@@ -84,36 +125,56 @@
             page: 0,
             total: 0
         };
-        filters: Record<string, any> = {};
+        filters: Record<string, unknown> = {};
 
         public config!: ItemsLoaderConfig<T>;
+        
+        // Scroll management
         private scrollContainer: HTMLElement | null = null;
+        
+        // Infinite scroll
         private loadMoreObserver: IntersectionObserver | null = null;
         private currentLoadMoreTrigger: Element | null = null;
-        private isUpdating: boolean = false;
-        private observerReconnectAttempts: number = 0;
-        private maxObserverAttempts: number = 5;
+        private loadMoreMutationObserver: MutationObserver | null = null;
+        
+        // Visibility tracking
+        private visibilityObserver: IntersectionObserver | null = null;
+        private viewedItems = new Set<number | string>();
+        private dropdownIsOpen: boolean = false;
+        
+        // DOM references
         private itemsListContainer: HTMLElement | null = null;
         private searchInput: HTMLInputElement | null = null;
+        
+        // State flags
+        private isUpdating: boolean = false;
         private searchDebounceTimer: NodeJS.Timeout | null = null;
 
-        initialize(config: ItemsLoaderConfig<T>) {
+        // ═══════════════════════════════════════════════════════════════════
+        // LIFECYCLE
+        // ═══════════════════════════════════════════════════════════════════
 
+        initialize(config: ItemsLoaderConfig<T>) {
             this.config = {
                 pageSize: 10,
                 loadMoreText: 'Load More',
                 loadingText: 'Loading...',
                 errorText: 'Failed to load items',
                 containerClassName: bb_.container,
-                itemClassName: '__itemsLoader-item',
+                itemClassName: bb_.item,
                 enableInfiniteScroll: true,
                 scrollThreshold: 200,
                 enableSearch: false,
                 searchPlaceholder: 'Search...',
                 searchFilterKey: 'search',
                 searchDebounceMs: 300,
-                extractItems: (response) => response.notifications || response.items || response.data || [],
-                extractTotal: (response) => response.total || response.count || 0,
+                enableVisibilityTracking: false,
+                visibilityThreshold: 0.5,
+                visibilityRootMargin: '0px',
+                extractItems: (response: { notifications?: T[]; items?: T[]; data?: T[]; logs?: T[] }) => 
+                    response.notifications || response.items || response.data || response.logs || [],
+                extractTotal: (response: { total?: number; count?: number; pagination?: { total?: number } }) => 
+                    response.pagination?.total || response.total || response.count || 0,
                 ...config
             };
 
@@ -138,15 +199,34 @@
             if (this.config.scrollThreshold) {
                 this.setupScrollListener();
             }
+
+            if (this.config.enableVisibilityTracking) {
+                this.setupVisibilityTracking();
+            }
         }
 
         onUnmount() {
-            this.disconnectObserver();
+            this.disconnectInfiniteScrollObserver();
+            this.disconnectVisibilityObserver();
+            
+            if (this.loadMoreMutationObserver) {
+                this.loadMoreMutationObserver.disconnect();
+                this.loadMoreMutationObserver = null;
+            }
+            
             if (this.scrollContainer) {
                 this.scrollContainer.removeEventListener('scroll', this.handleScroll);
                 this.scrollContainer = null;
             }
+            
+            if (this.searchDebounceTimer) {
+                clearTimeout(this.searchDebounceTimer);
+            }
         }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DATA LOADING
+        // ═══════════════════════════════════════════════════════════════════
 
         async loadMore() {
             if (this.loadState.loading || !this.loadState.hasMore) {
@@ -154,37 +234,19 @@
             }
 
             try {
+                const scrollContainer = this.scrollContainer || this.findScrollContainer();
+                const savedScrollTop = scrollContainer?.scrollTop || 0;
+                const savedScrollHeight = scrollContainer?.scrollHeight || 0;
+
                 this.loadState = { ...this.loadState, loading: true, error: null };
-                // Don't call update() - instead show loading indicator directly
                 this.updateLoadingState();
 
                 const nextPage = this.loadState.page + 1;
-
-                let url: string;
-                if (typeof this.config.fetchUrl === 'function') {
-                    url = this.config.fetchUrl(nextPage, this.filters);
-                } else {
-                    const separator = this.config.fetchUrl.includes('?') ? '&' : '?';
-                    const params = new URLSearchParams({
-                        page: nextPage.toString(),
-                        limit: this.config.pageSize!.toString(),
-                        ...this.filters
-                    });
-                    url = `${this.config.fetchUrl}${separator}${params}`;
-                }
-
-                const headers: HeadersInit = {
-                    'Content-Type': 'application/json'
-                };
-
-                const token = this.config.getAuthToken?.();
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
+                const url = this.buildUrl(nextPage);
 
                 const response = await fetch(url, {
                     credentials: 'include',
-                    headers
+                    headers: this.buildHeaders()
                 });
 
                 if (!response.ok) {
@@ -192,12 +254,10 @@
                 }
 
                 const data = await response.json();
-
                 const newItems = this.config.extractItems!(data);
                 const total = this.config.extractTotal!(data);
 
                 this.items = [...this.items, ...newItems];
-
                 this.loadState = {
                     loading: false,
                     error: null,
@@ -206,13 +266,24 @@
                     total
                 };
 
-                // ✅ FIX: Update existing DOM instead of full re-render
+                this.updateLoadingState();
                 this.appendNewItems(newItems);
 
-                // Reconnect observer
-                this.observerReconnectAttempts = 0;
-                this.reconnectObserver();
+                // Restore scroll position
+                if (scrollContainer && savedScrollTop > 0) {
+                    scrollContainer.scrollTop = savedScrollTop;
+                    
+                    requestAnimationFrame(() => {
+                        const newScrollHeight = scrollContainer.scrollHeight;
+                        const scrollHeightDiff = newScrollHeight - savedScrollHeight;
+                        
+                        if (Math.abs(scrollHeightDiff) > 10) {
+                            scrollContainer.scrollTop = savedScrollTop;
+                        }
+                    });
+                }
 
+                this.reconnectInfiniteScrollObserver();
                 this.config.onLoadMore?.(nextPage, this.items);
 
             } catch (error) {
@@ -221,10 +292,9 @@
                     loading: false,
                     error: error instanceof Error ? error.message : this.config.errorText!
                 };
-                // Show error and hide loading
+
                 this.updateLoadingState();
                 this.updateFooter();
-
                 this.config.onError?.(error instanceof Error ? error : new Error('Unknown error'));
             }
         }
@@ -241,15 +311,12 @@
             await this.loadMore();
         }
 
-        async applyFilters(newFilters: Record<string, any>) {
-            if (this.isUpdating) {
-                return;
-            }
+        async applyFilters(newFilters: Record<string, unknown>) {
+            if (this.isUpdating) return;
 
             this.isUpdating = true;
             this.filters = { ...newFilters };
 
-            // ✅ Reset items and pagination when applying new filters
             this.items = [];
             this.loadState = {
                 loading: true,
@@ -259,34 +326,13 @@
                 total: 0
             };
 
-            // Show loading indicator
             this.updateLoadingState();
 
             try {
-                const url = typeof this.config.fetchUrl === 'function'
-                    ? this.config.fetchUrl(1, this.filters)
-                    : (() => {
-                        const separator = this.config.fetchUrl.includes('?') ? '&' : '?';
-                        const params = new URLSearchParams({
-                            page: '1',
-                            limit: this.config.pageSize!.toString(),
-                            ...this.filters
-                        });
-                        return `${this.config.fetchUrl}${separator}${params}`;
-                    })();
-
-                const headers: HeadersInit = {
-                    'Content-Type': 'application/json'
-                };
-
-                const token = this.config.getAuthToken?.();
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
-
+                const url = this.buildUrl(1);
                 const response = await fetch(url, {
                     credentials: 'include',
-                    headers
+                    headers: this.buildHeaders()
                 });
 
                 if (!response.ok) {
@@ -294,11 +340,9 @@
                 }
 
                 const data = await response.json();
-
                 const newItems = this.config.extractItems!(data);
                 const total = this.config.extractTotal!(data);
 
-                // Update state
                 this.items = [...newItems];
                 this.loadState = {
                     loading: false,
@@ -308,20 +352,17 @@
                     total
                 };
 
-                // ✅ For filters, we need to clear the list and update
-                // Clear the list container
+                // Clear container
                 if (this.itemsListContainer) {
                     this.itemsListContainer.innerHTML = '';
                 }
 
-                // Clear old footer and empty state elements
                 if (this.element) {
-                    this.element.querySelectorAll(`${bb_.trigger}, ${bb_.end}, ${bb_.error}, ${bb_.loading}, ${bb_.emptyState}`).forEach(el => el.remove());
+                    this.element.querySelectorAll(`.${bb_.trigger}, .${bb_.end}, .${bb_.error}, .${bb_.loading}, .${bb_.emptyState}`).forEach(el => el.remove());
                 }
 
-                // If there are items after filter, append them
+                // Append items or show empty state
                 if (this.items.length > 0) {
-                    // Make sure list container is ready
                     if (!this.itemsListContainer) {
                         this.itemsListContainer = this.element?.querySelector(`.${bb_.list}`) as HTMLElement;
                     }
@@ -330,19 +371,13 @@
                         this.appendNewItems(this.items);
                     }
                 } else {
-                    // Show empty state - append to container, not list
-                    if (this.config.emptyStateConfig && this.element) {
-                        const emptyVNode = this.renderEmptyState();
-                        const emptyElement = createDOMElement(emptyVNode);
-                        this.element.appendChild(emptyElement);
-                    }
+                    this.updateFooter();
                 }
 
-                // Re-establish container reference
                 this.itemsListContainer = this.element?.querySelector(`.${bb_.list}`) as HTMLElement;
-                this.observerReconnectAttempts = 0;
-                this.reconnectObserver();
+                this.reconnectInfiniteScrollObserver();
 
+                this.config.onLoadMore?.(1, this.items);
                 this.config.onFiltersChange?.(this.filters);
 
             } catch (error) {
@@ -352,9 +387,7 @@
                     error: error instanceof Error ? error.message : this.config.errorText!
                 };
 
-                // Show error directly
                 this.updateLoadingState();
-
                 this.config.onError?.(error instanceof Error ? error : new Error('Unknown error'));
             } finally {
                 this.isUpdating = false;
@@ -362,12 +395,10 @@
         }
 
         async handleSearch(searchQuery: string) {
-            // Clear existing debounce timer
             if (this.searchDebounceTimer) {
                 clearTimeout(this.searchDebounceTimer);
             }
 
-            // Set up new debounce timer
             this.searchDebounceTimer = setTimeout(async () => {
                 const newFilters = { ...this.filters };
 
@@ -384,7 +415,6 @@
         updateItems(updatedItems: T[]) {
             this.items = [...updatedItems];
 
-            // Clear the list and re-append items instead of full re-render
             if (this.itemsListContainer) {
                 this.itemsListContainer.innerHTML = '';
                 this.appendNewItems(updatedItems);
@@ -392,48 +422,189 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // DOM UPDATE HELPERS - ✅ NEW: Append without full re-render
+        // VISIBILITY TRACKING
+        // ═══════════════════════════════════════════════════════════════════
+
+        private setupVisibilityTracking() {
+            if (!this.config.enableVisibilityTracking) return;
+
+            if (this.visibilityObserver) {
+                this.visibilityObserver.disconnect();
+            }
+
+            const scrollContainer = this.findScrollContainer();
+
+            this.visibilityObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && this.dropdownIsOpen) {
+                            const element = entry.target as HTMLElement;
+                            const itemIndex = parseInt(element.getAttribute('data-item-index') || '-1');
+
+                            if (itemIndex >= 0 && itemIndex < this.items.length) {
+                                const item = this.items[itemIndex];
+                                const itemId = this.config.getItemId?.(item);
+                                const shouldTrack = this.config.shouldTrackItem?.(item) ?? true;
+
+                                if (itemId && !this.viewedItems.has(itemId) && shouldTrack) {
+                                    this.viewedItems.add(itemId);
+                                }
+                            }
+                        }
+                    });
+                },
+                {
+                    root: scrollContainer,
+                    rootMargin: this.config.visibilityRootMargin,
+                    threshold: this.config.visibilityThreshold
+                }
+            );
+
+            this.observeTrackableItems();
+        }
+
+        private observeTrackableItems() {
+            if (!this.visibilityObserver || !this.itemsListContainer) return;
+
+            const items = this.itemsListContainer.querySelectorAll('[data-item-index]');
+            items.forEach(element => {
+                const itemIndex = parseInt((element as HTMLElement).getAttribute('data-item-index') || '-1');
+                if (itemIndex >= 0 && itemIndex < this.items.length) {
+                    const item = this.items[itemIndex];
+                    const shouldTrack = this.config.shouldTrackItem?.(item) ?? true;
+
+                    if (shouldTrack) {
+                        this.visibilityObserver!.observe(element);
+                    }
+                }
+            });
+        }
+
+        private trackAlreadyVisibleItems() {
+            if (!this.itemsListContainer) return;
+
+            const scrollContainer = this.findScrollContainer();
+            if (!scrollContainer) return;
+
+            const items = this.itemsListContainer.querySelectorAll('[data-item-index]');
+            const containerRect = scrollContainer.getBoundingClientRect();
+
+            items.forEach(element => {
+                const itemIndex = parseInt((element as HTMLElement).getAttribute('data-item-index') || '-1');
+                if (itemIndex < 0 || itemIndex >= this.items.length) return;
+
+                const item = this.items[itemIndex];
+                const itemId = this.config.getItemId?.(item);
+                if (!itemId || this.viewedItems.has(itemId)) return;
+
+                const shouldTrack = this.config.shouldTrackItem?.(item) ?? true;
+                if (!shouldTrack) return;
+
+                const rect = (element as HTMLElement).getBoundingClientRect();
+                const isVisible = (
+                    rect.top < containerRect.bottom &&
+                    rect.bottom > containerRect.top &&
+                    rect.top >= containerRect.top - 100 &&
+                    rect.bottom <= containerRect.bottom + 100
+                );
+
+                if (isVisible) {
+                    this.viewedItems.add(itemId);
+                }
+            });
+        }
+
+        private disconnectVisibilityObserver() {
+            if (this.visibilityObserver) {
+                this.visibilityObserver.disconnect();
+                this.visibilityObserver = null;
+            }
+        }
+
+        // 🆕 PUBLIC: Dropdown lifecycle methods
+        public handleDropdownOpen() {
+            this.dropdownIsOpen = true;
+            this.viewedItems.clear();
+
+            if (this.config.enableVisibilityTracking) {
+                this.trackAlreadyVisibleItems();
+                this.observeTrackableItems();
+            }
+
+            this.config.onDropdownOpen?.();
+        }
+
+        public async handleDropdownClose() {
+            this.dropdownIsOpen = false;
+
+            if (this.viewedItems.size > 0 && this.config.onItemsViewed) {
+                const viewedItemsArray = this.items.filter(item => {
+                    const itemId = this.config.getItemId?.(item);
+                    return itemId && this.viewedItems.has(itemId);
+                });
+
+                await this.config.onItemsViewed(viewedItemsArray);
+            }
+
+            this.viewedItems.clear();
+            this.config.onDropdownClose?.();
+        }
+
+        // 🆕 PUBLIC: Batch operations
+        public async performBatchAction(action: string, itemIds: (number | string)[]) {
+            if (this.config.onBatchAction) {
+                await this.config.onBatchAction(action, itemIds);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DOM UPDATE HELPERS
         // ═══════════════════════════════════════════════════════════════════
 
         private appendNewItems(newItems: T[]) {
-            // Ensure we have the list container reference
             if (!this.itemsListContainer) {
                 this.itemsListContainer = this.element?.querySelector(`.${bb_.list}`) as HTMLElement;
             }
 
-            if (!this.itemsListContainer) {
-                return;
-            }
+            if (!this.itemsListContainer) return;
 
-            // Append new items to existing list
+            const fragment = document.createDocumentFragment();
             const startIndex = this.items.length - newItems.length;
+
             newItems.forEach((item, index) => {
-                const itemElement = this.config.renderItem(item, startIndex + index);
+                const actualIndex = startIndex + index;
+                const itemElement = this.config.renderItem(item, actualIndex);
+
+                itemElement.setAttribute('data-item-index', actualIndex.toString());
 
                 if (this.config.onItemClick) {
                     itemElement.className = `${itemElement.className} ${this.config.itemClassName} clickable`;
-                    itemElement.onclick = () => this.handleItemClick(item, startIndex + index);
+                    itemElement.onclick = () => this.handleItemClick(item, actualIndex);
                 } else {
                     itemElement.className = `${itemElement.className} ${this.config.itemClassName}`;
                 }
 
-                this.itemsListContainer!.appendChild(itemElement);
+                fragment.appendChild(itemElement);
             });
 
-            // Update end message and trigger
+            this.itemsListContainer.appendChild(fragment);
             this.updateFooter();
+
+            if (this.config.enableVisibilityTracking && this.dropdownIsOpen) {
+                setTimeout(() => this.observeTrackableItems(), 100);
+            }
         }
 
         private updateLoadingState() {
             const container = this.element?.querySelector(`.${bb_.container}`);
             if (!container) return;
 
-            // Find or create loading indicator
             let loadingEl = container.querySelector(`.${bb_.loading}`) as HTMLElement;
 
             if (this.loadState.loading) {
                 if (!loadingEl) {
-                    loadingEl = this.renderLoading() as any;
+                    const loadingVNode = this.renderLoading();
+                    loadingEl = this.createElementFromVNode(loadingVNode);
                     container.appendChild(loadingEl);
                 }
             } else {
@@ -443,30 +614,21 @@
             }
         }
 
-        // ✅ PUBLIC: Update footer to show empty state, trigger, or end message
         public updateFooter() {
-            // The container is what ItemsLoader renders as its root
-            // So this.element points to the outermost div created by render()
-            // which has className this.config.containerClassName (bb_itemsLoaderContainer)
             const container = this.element;
-            if (!container) {
-                return;
-            }
+            if (!container) return;
 
-            // Remove old footer elements AND empty state
             container.querySelectorAll(`.${bb_.trigger}, .${bb_.end}, .${bb_.emptyState}`).forEach(el => {
                 el.remove();
             });
 
-            // ✅ NEW: Show empty state if there are no items after loading
             if (this.items.length === 0 && !this.loadState.loading && this.config.emptyStateConfig) {
                 const emptyVNode = this.renderEmptyState();
                 const emptyElement = createDOMElement(emptyVNode);
                 container.appendChild(emptyElement);
-                return; // Don't add trigger/end message if showing empty state
+                return;
             }
 
-            // Add new footer elements
             if (this.loadState.hasMore && !this.loadState.loading && this.items.length > 0) {
                 const triggerVNode = this.renderLoadMoreTrigger();
                 const triggerElement = createDOMElement(triggerVNode);
@@ -481,7 +643,7 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // INFINITE SCROLL SETUP
+        // INFINITE SCROLL
         // ═══════════════════════════════════════════════════════════════════
 
         private setupInfiniteScroll() {
@@ -503,14 +665,11 @@
                 }
             );
 
-            this.reconnectObserver();
+            this.reconnectInfiniteScrollObserver();
         }
 
-        private reconnectObserver() {
-
-            if (!this.config.enableInfiniteScroll || !this.loadMoreObserver) {
-                return;
-            }
+        private reconnectInfiniteScrollObserver() {
+            if (!this.config.enableInfiniteScroll || !this.loadMoreObserver) return;
 
             if (this.currentLoadMoreTrigger) {
                 this.loadMoreObserver.unobserve(this.currentLoadMoreTrigger);
@@ -518,32 +677,47 @@
             }
 
             const tryObserve = () => {
-                this.observerReconnectAttempts++;
-
-                // Always look from the root element (this.element)
                 const trigger = this.element?.querySelector('[data-load-more-trigger="true"]');
 
                 if (trigger) {
                     this.loadMoreObserver!.observe(trigger);
                     this.currentLoadMoreTrigger = trigger;
-                    this.observerReconnectAttempts = 0;
                     return true;
-                }
-
-                if (this.observerReconnectAttempts < this.maxObserverAttempts) {
-                    const delay = [50, 100, 200, 300, 500][Math.min(this.observerReconnectAttempts - 1, 4)];
-                    setTimeout(tryObserve, delay);
-                } else {
-                    this.observerReconnectAttempts = 0;
                 }
 
                 return false;
             };
 
-            requestAnimationFrame(tryObserve);
+            if (!tryObserve()) {
+                // Use MutationObserver to wait for trigger
+                if (this.loadMoreMutationObserver) {
+                    this.loadMoreMutationObserver.disconnect();
+                }
+
+                this.loadMoreMutationObserver = new MutationObserver(() => {
+                    if (tryObserve() && this.loadMoreMutationObserver) {
+                        this.loadMoreMutationObserver.disconnect();
+                        this.loadMoreMutationObserver = null;
+                    }
+                });
+
+                if (this.element) {
+                    this.loadMoreMutationObserver.observe(this.element, {
+                        childList: true,
+                        subtree: true
+                    });
+
+                    setTimeout(() => {
+                        if (this.loadMoreMutationObserver) {
+                            this.loadMoreMutationObserver.disconnect();
+                            this.loadMoreMutationObserver = null;
+                        }
+                    }, 5000);
+                }
+            }
         }
 
-        private disconnectObserver() {
+        private disconnectInfiniteScrollObserver() {
             if (this.loadMoreObserver && this.currentLoadMoreTrigger) {
                 this.loadMoreObserver.unobserve(this.currentLoadMoreTrigger);
                 this.currentLoadMoreTrigger = null;
@@ -552,15 +726,13 @@
 
         private setupScrollListener() {
             requestAnimationFrame(() => {
-                // Try to find the scroll container - it should be the notifications loader div
-                this.scrollContainer = this.element?.querySelector('[data-notifications-loader]') as HTMLElement;
-
-                // If not found, try the element itself
-                if (!this.scrollContainer) {
-                    this.scrollContainer = this.element as HTMLElement;
-                }
+                this.scrollContainer = this.findScrollContainer();
 
                 if (this.scrollContainer) {
+                    if ('scrollRestoration' in history) {
+                        history.scrollRestoration = 'manual';
+                    }
+
                     this.scrollContainer.addEventListener('scroll', this.handleScroll);
                 }
             });
@@ -579,21 +751,109 @@
             }
         };
 
+        // ═══════════════════════════════════════════════════════════════════
+        // UTILITIES
+        // ═══════════════════════════════════════════════════════════════════
+
+        private findScrollContainer(): HTMLElement | null {
+            const candidates = [
+                this.element?.closest('.bb_notificationsContent'),
+                this.element?.closest('.bb_dropdownMenu'),
+                this.element?.querySelector('[data-notifications-loader]'),
+                this.element?.closest('[data-notifications-loader]'),
+                this.element?.closest('.scrollbar-thin'),
+                this.element?.parentElement,
+                this.element
+            ];
+
+            for (const candidate of candidates) {
+                if (candidate) {
+                    const el = candidate as HTMLElement;
+                    if (el.scrollHeight > el.clientHeight || el.classList.contains('scrollbar-thin')) {
+                        return el;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private buildUrl(page: number): string {
+            if (typeof this.config.fetchUrl === 'function') {
+                return this.config.fetchUrl(page, this.filters);
+            }
+
+            const separator = this.config.fetchUrl.includes('?') ? '&' : '?';
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: this.config.pageSize!.toString(),
+                ...this.filters as Record<string, string>
+            });
+
+            return `${this.config.fetchUrl}${separator}${params}`;
+        }
+
+        private buildHeaders(): HeadersInit {
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+
+            const token = this.config.getAuthToken?.();
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            return headers;
+        }
+
         private handleItemClick = (item: T, index: number) => {
             this.config.onItemClick?.(item, index);
         };
+
+        private createElementFromVNode(vnode: VNode): HTMLElement {
+            if (typeof vnode.type !== 'string') {
+                throw new Error('Can only create elements from string types');
+            }
+
+            const element = document.createElement(vnode.type);
+
+            if (vnode.props) {
+                Object.entries(vnode.props).forEach(([key, value]) => {
+                    if (key === 'className') {
+                        element.className = value as string;
+                    } else if (key === 'style') {
+                        if (typeof value === 'string') {
+                            element.setAttribute('style', value);
+                        } else if (typeof value === 'object' && value !== null) {
+                            Object.assign(element.style, value);
+                        }
+                    } else if (key === 'onclick' && typeof value === 'function') {
+                        element.addEventListener('click', value as EventListener);
+                    } else if (key !== 'children' && key !== 'ref') {
+                        element.setAttribute(key, String(value));
+                    }
+                });
+            }
+
+            if (vnode.children) {
+                vnode.children.forEach((child: VNodeChild) => {
+                    if (child === null || child === undefined) return;
+                    if (typeof child === 'string' || typeof child === 'number') {
+                        element.appendChild(document.createTextNode(String(child)));
+                    } else if (typeof child === 'object') {
+                        element.appendChild(this.createElementFromVNode(child));
+                    }
+                });
+            }
+
+            return element;
+        }
 
         // ═══════════════════════════════════════════════════════════════════
         // RENDER
         // ═══════════════════════════════════════════════════════════════════
 
         render() {
-            if (this.items.length === 0 && !this.loadState.loading && this.loadState.page > 0 && this.config.emptyStateConfig) {
-                return this.renderEmptyState();
-            }
-
-            // ✅ Don't include HTMLElements in VNode tree. Instead, create empty containers
-            // and populate them via DOM manipulation in appendNewItems()
             return createElement('div', {
                 className: this.config.containerClassName
             },
@@ -615,14 +875,13 @@
         }
 
         private renderSearchBar() {
-            return createElement('div', { className: bb_.searchbar, style: 'margin-bottom: 12px;' },
-                createElement('div', { className: 'row gap-sm', style: 'position: relative;' },
-                    createElement('i', { className: 'fas fa-search', style: 'position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-color-quaternary);' }),
+            return createElement('div', { className: bb_.searchbar },
+                createElement('div', { className: 'row gap-sm' },
+                    createElement('i', { className: 'fas fa-search' }),
                     createElement('input', {
                         type: 'text',
-                        className: '__input',
+                        className: bb_.formFieldInput,
                         placeholder: this.config.searchPlaceholder,
-                        style: 'padding-left: 36px; flex: 1;',
                         ref: (el: HTMLElement | null) => {
                             if (el) {
                                 this.searchInput = el as HTMLInputElement;
@@ -637,7 +896,7 @@
             );
         }
 
-        private renderEmptyState() {
+        public renderEmptyState() {
             const config = this.config.emptyStateConfig!;
             return createElement('div', { className: bb_.emptyState },
                 createElement('i', { className: `__icon ${config.icon}` }),
@@ -678,8 +937,7 @@
         private renderEndMessage() {
             return createElement('div', { className: bb_.end },
                 createElement('i', { className: 'fas fa-check-circle' }),
-                t(`global.all_loaded`, { count: String(this.loadState.total), title: 'global.sm.notifications' })
-                // `All ${total} ${title} loaded`
+                t(`All loaded`, { count: String(this.loadState.total) })
             );
         }
     }

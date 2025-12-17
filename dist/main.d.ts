@@ -797,6 +797,26 @@ declare class I18nManager {
      */
     tLang(key: string, lang: LanguageCode, params?: Record<string, string>): string;
     /**
+     * Translate a key and convert HTML tags in the translation to VNode elements
+     * Supports tags like <br>, <strong>, <em>, <b>, <i>, etc.
+     * Useful for multiline translations with formatting
+     *
+     * @example
+     * // Translation: "Hello <br> World"
+     * tHtml('greeting') // => [text node, br element, text node]
+     *
+     * @param key Translation key
+     * @param params Optional parameters for replacement
+     * @returns Array of VNode and string elements that can be used as children
+     */
+    tHtml(key: string, params?: Record<string, string>): (VNode | string)[];
+    /**
+     * Parse HTML string into VNode and text elements
+     * Converts \n and /n sequences to <br> tags
+     * @private
+     */
+    private parseHtmlString;
+    /**
      * Get all translations for current language
      */
     getTranslations(): Record<string, string>;
@@ -869,6 +889,14 @@ declare function t(key: string, params?: Record<string, string>): string;
  * @returns Translated string
  */
 declare function tLang(key: string, lang: string, params?: Record<string, string>): string;
+/**
+ * Translate a key and convert HTML tags to VNode elements
+ * Useful for multiline translations with formatting like <br>
+ * @param key Translation key
+ * @param params Optional parameters
+ * @returns Array of VNode and string elements that can be used as children
+ */
+declare function tHtml(key: string, params?: Record<string, string>): (VNode | string)[];
 /**
  * Set the current language globally (synchronous)
  * @param lang Language code
@@ -1272,7 +1300,7 @@ declare const popup: {
     closeAll: () => void;
 };
 
-type TabPosition = 'top' | 'left' | 'right';
+type TabPosition = 'top' | 'side';
 type TabStyle = 'default' | 'pills' | 'minimal';
 interface Tab {
     id: string;
@@ -1353,7 +1381,7 @@ declare function createTabbedView(options: TabbedViewOptions): TabbedView;
 declare function mountTabbedView(container: HTMLElement, options: TabbedViewOptions): Promise<TabbedView>;
 
 interface ItemsLoaderConfig<T> {
-    fetchUrl: string | ((page: number, filters: Record<string, any>) => string);
+    fetchUrl: string | ((page: number, filters: Record<string, unknown>) => string);
     renderItem: (item: T, index: number) => HTMLElement;
     pageSize?: number;
     emptyStateConfig?: {
@@ -1366,8 +1394,12 @@ interface ItemsLoaderConfig<T> {
     errorText?: string;
     containerClassName?: string;
     itemClassName?: string;
-    filters?: Record<string, any>;
-    onFiltersChange?: (filters: Record<string, any>) => void;
+    filters?: Record<string, unknown>;
+    onFiltersChange?: (filters: Record<string, unknown>) => void;
+    enableSearch?: boolean;
+    searchPlaceholder?: string;
+    searchFilterKey?: string;
+    searchDebounceMs?: number;
     onItemClick?: (item: T, index: number) => void;
     onLoadMore?: (page: number, items: T[]) => void;
     onError?: (error: Error) => void;
@@ -1377,10 +1409,15 @@ interface ItemsLoaderConfig<T> {
     getAuthToken?: () => string | null;
     enableInfiniteScroll?: boolean;
     scrollThreshold?: number;
-    enableSearch?: boolean;
-    searchPlaceholder?: string;
-    searchFilterKey?: string;
-    searchDebounceMs?: number;
+    enableVisibilityTracking?: boolean;
+    visibilityThreshold?: number;
+    visibilityRootMargin?: string;
+    onItemsViewed?: (viewedItems: T[]) => Promise<void>;
+    getItemId?: (item: T) => number | string;
+    shouldTrackItem?: (item: T) => boolean;
+    onDropdownOpen?: () => void;
+    onDropdownClose?: () => void;
+    onBatchAction?: (action: string, itemIds: (number | string)[]) => Promise<void>;
 }
 interface LoadState {
     loading: boolean;
@@ -1389,40 +1426,53 @@ interface LoadState {
     page: number;
     total: number;
 }
-declare class ItemsLoader<T = any> extends Component {
+declare class ItemsLoader<T = unknown> extends Component {
     items: T[];
     loadState: LoadState;
-    filters: Record<string, any>;
+    filters: Record<string, unknown>;
     config: ItemsLoaderConfig<T>;
     private scrollContainer;
     private loadMoreObserver;
     private currentLoadMoreTrigger;
-    private isUpdating;
-    private observerReconnectAttempts;
-    private maxObserverAttempts;
+    private loadMoreMutationObserver;
+    private visibilityObserver;
+    private viewedItems;
+    private dropdownIsOpen;
     private itemsListContainer;
     private searchInput;
+    private isUpdating;
     private searchDebounceTimer;
     initialize(config: ItemsLoaderConfig<T>): void;
     onMount(): Promise<void>;
     onUnmount(): void;
     loadMore(): Promise<void>;
     reload(): Promise<void>;
-    applyFilters(newFilters: Record<string, any>): Promise<void>;
+    applyFilters(newFilters: Record<string, unknown>): Promise<void>;
     handleSearch(searchQuery: string): Promise<void>;
     updateItems(updatedItems: T[]): void;
+    private setupVisibilityTracking;
+    private observeTrackableItems;
+    private trackAlreadyVisibleItems;
+    private disconnectVisibilityObserver;
+    handleDropdownOpen(): void;
+    handleDropdownClose(): Promise<void>;
+    performBatchAction(action: string, itemIds: (number | string)[]): Promise<void>;
     private appendNewItems;
     private updateLoadingState;
     updateFooter(): void;
     private setupInfiniteScroll;
-    private reconnectObserver;
-    private disconnectObserver;
+    private reconnectInfiniteScrollObserver;
+    private disconnectInfiniteScrollObserver;
     private setupScrollListener;
     private handleScroll;
+    private findScrollContainer;
+    private buildUrl;
+    private buildHeaders;
     private handleItemClick;
-    render(): _je_es_vdom.VNode;
+    private createElementFromVNode;
+    render(): VNode;
     private renderSearchBar;
-    private renderEmptyState;
+    renderEmptyState(): VNode;
     private renderLoading;
     private renderError;
     private renderLoadMoreTrigger;
@@ -1444,13 +1494,14 @@ interface DropdownConfig {
     trigger: {
         text?: string;
         icon?: string;
-        element?: () => any;
+        element?: () => unknown;
         className?: string;
     };
     items: (DropdownItemConfig | 'divider')[];
     position?: 'left' | 'right';
     parentId?: string;
     closeOnItemClick?: boolean;
+    preventAutoClose?: boolean;
     onOpen?: () => void;
     onClose?: () => void;
 }
@@ -1481,7 +1532,7 @@ declare class Dropdown extends Component {
      * Handle item click
      */
     handleItemClick(item: DropdownItemConfig, e: Event): void;
-    render(): _je_es_vdom.VNode;
+    render(): VNode;
     private renderTrigger;
     private renderMenu;
 }
@@ -1670,4 +1721,4 @@ declare function formatTimeAgo(timestamp: string | Date): string;
  */
 declare function getTimeTitle(timestamp: string | Date): string;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tHtml, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };

@@ -45,7 +45,7 @@
 
 // ╔════════════════════════════════════════ TYPE ════════════════════════════════════════╗
 
-    export type TabPosition = 'top' | 'left' | 'right';
+    export type TabPosition = 'top' | 'side';
     export type TabStyle = 'default' | 'pills' | 'minimal';
 
     export interface Tab {
@@ -234,8 +234,8 @@
         render() {
             const containerClass = [
                 bb_.container,
-                `__tabbedview__--${this.position}`,
-                `__tabbedview__--${this.style}`,
+                `bb_tabbedview__--${this.position}`,
+                `bb_tabbedview__--${this.style}`,
                 this.className
             ].filter(Boolean).join(' ');
 

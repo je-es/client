@@ -6,7 +6,8 @@
 
 // ╔════════════════════════════════════════ CORE ════════════════════════════════════════╗
 
-    import type { TranslationSet, LanguageCode, I18nConfig } from '../../types';
+    import type { TranslationSet, LanguageCode, I18nConfig, VNode } from '../../types';
+    import { createElement } from '@je-es/vdom';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -156,6 +157,60 @@
             }
 
             /**
+             * Translate a key and convert HTML tags in the translation to VNode elements
+             * Supports tags like <br>, <strong>, <em>, <b>, <i>, etc.
+             * Useful for multiline translations with formatting
+             *
+             * @example
+             * // Translation: "Hello <br> World"
+             * tHtml('greeting') // => [text node, br element, text node]
+             *
+             * @param key Translation key
+             * @param params Optional parameters for replacement
+             * @returns Array of VNode and string elements that can be used as children
+             */
+            public tHtml(key: string, params?: Record<string, string>): (VNode | string)[] {
+                const translation = this.t(key, params);
+                return this.parseHtmlString(translation);
+            }
+
+            /**
+             * Parse HTML string into VNode and text elements
+             * Converts \n and /n sequences to <br> tags
+             * @private
+             */
+            private parseHtmlString(htmlString: string): (VNode | string)[] {
+                // Replace both \n and /n with <br> tags
+                const processedString = htmlString.replace(/\\n|\/n/g, '<br>');
+                
+                const result: (VNode | string)[] = [];
+                const regex = /<([^/>]+)>([^<]*)<\/\1>|<([^/>]+)\s*\/?>|([^<]+)/g;
+                let match;
+
+                while ((match = regex.exec(processedString)) !== null) {
+                    const openingTag = match[1]; // For paired tags like <strong>text</strong>
+                    const pairedContent = match[2];
+                    const selfClosingTag = match[3]; // For self-closing tags like <br/>
+                    const textContent = match[4];
+
+                    if (textContent) {
+                        // Plain text content
+                        result.push(textContent);
+                    } else if (openingTag) {
+                        // Paired tag like <strong>text</strong>
+                        const tagName = openingTag.split(/\s+/)[0].toLowerCase();
+                        result.push(createElement(tagName, {}, pairedContent));
+                    } else if (selfClosingTag) {
+                        // Self-closing tag like <br/> or <br>
+                        const tagName = selfClosingTag.trim().toLowerCase();
+                        result.push(createElement(tagName, {}));
+                    }
+                }
+
+                return result.length > 0 ? result : [htmlString];
+            }
+
+            /**
              * Get all translations for current language
              */
             public getTranslations(): Record<string, string> {
@@ -218,12 +273,8 @@
                                 let fullUrl = `${pattern}${lang}.json`;
 
                                 if (typeof window !== 'undefined' && !fullUrl.startsWith('http')) {
-                                    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-                                    if (fullUrl.startsWith('/')) {
-                                        fullUrl = window.location.origin + fullUrl;
-                                    } else {
-                                        fullUrl = window.location.origin + basePath + '/' + fullUrl;
-                                    }
+                                    // Always use domain root + path, ignoring current page path
+                                    fullUrl = window.location.origin + (fullUrl.startsWith('/') ? fullUrl : '/' + fullUrl);
                                 }
 
                                 const response = await fetch(fullUrl);
@@ -241,12 +292,8 @@
                             let fullUrl = url;
 
                             if (typeof window !== 'undefined' && !fullUrl.startsWith('http')) {
-                                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-                                if (fullUrl.startsWith('/')) {
-                                    fullUrl = window.location.origin + fullUrl;
-                                } else {
-                                    fullUrl = window.location.origin + basePath + '/' + fullUrl;
-                                }
+                                // Always use domain root + path, ignoring current page path
+                                fullUrl = window.location.origin + (fullUrl.startsWith('/') ? fullUrl : '/' + fullUrl);
                             }
 
                             const response = await fetch(fullUrl);
@@ -371,6 +418,17 @@
      */
     export function tLang(key: string, lang: string, params?: Record<string, string>): string {
         return getI18n().tLang(key, lang, params);
+    }
+
+    /**
+     * Translate a key and convert HTML tags to VNode elements
+     * Useful for multiline translations with formatting like <br>
+     * @param key Translation key
+     * @param params Optional parameters
+     * @returns Array of VNode and string elements that can be used as children
+     */
+    export function tHtml(key: string, params?: Record<string, string>): (VNode | string)[] {
+        return getI18n().tHtml(key, params);
     }
 
     /**
