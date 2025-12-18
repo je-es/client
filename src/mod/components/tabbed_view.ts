@@ -302,7 +302,7 @@
                 if (!activeTab) {
                     return createElement('div', { className: contentClass },
                         createElement('div', { className: bb_.content.emptyState },
-                            createElement('p', {}, 'No tab selected')
+                            createElement('p', {}, t('global.loading'))
                         )
                     );
                 }
@@ -391,7 +391,7 @@
                     } catch (error) {
                         console.error('Error rendering tab component:', error);
                         return createElement('div', { className: bb_.content.error },
-                            'Error rendering tab content'
+                            t('global.loading')
                         );
                     }
                 }
@@ -403,7 +403,7 @@
 
                 // Fallback
                 return createElement('div', { className: bb_.content.emptyState },
-                    createElement('p', {}, 'No content available')
+                    createElement('p', {}, t('global.loading'))
                 );
             }
 

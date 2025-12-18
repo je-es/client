@@ -13,6 +13,7 @@
     import { state } from '../core/decorators';
     import { api } from '@je-es/capi';
     import type { FormFieldConfig, ValidationRule } from '../../types';
+import { t } from '../services/i18n';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -158,19 +159,19 @@
 
             // Email
             if (validation.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stringValue)) {
-                return validation.message || 'Invalid email address';
+                return validation.message || 'Invalid email format';
             }
 
             // URL
             if (validation.url && !/^https?:\/\/.+/.test(stringValue)) {
-                return validation.message || 'Invalid URL';
+                return validation.message || 'Invalid URL format';
             }
 
             // Custom validation
             if (validation.custom) {
                 const result = validation.custom(value);
                 if (result !== true) {
-                    return typeof result === 'string' ? result : 'Validation failed';
+                    return typeof result === 'string' ? result : undefined;
                 }
             }
 
@@ -248,7 +249,7 @@
                 }
 
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : 'Submission failed';
+                const errorMessage = error instanceof Error ? error.message : t('global.loading');
                 this.submitError = errorMessage;
 
                 if (this.props.onError) {
@@ -410,7 +411,7 @@
                     ` : ''}
 
                     ${this.submitSuccess ? html`
-                        <div class="alert alert-success">Submitted successfully!</div>
+                        <div class="alert alert-success">${t('global.loading')}</div>
                     ` : ''}
 
                     ${fieldNodes}
@@ -421,8 +422,8 @@
                         disabled=${String(this.isSubmitting)}
                     >
                         ${this.isSubmitting
-                            ? (submitButton.loadingLabel || 'Submitting...')
-                            : (submitButton.label || 'Submit')
+                            ? (submitButton.loadingLabel || t('global.loading'))
+                            : (submitButton.label || t('global.loading'))
                         }
                     </button>
                 </form>

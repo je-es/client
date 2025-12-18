@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-    <img src="https://img.shields.io/badge/v-0.1.9-black"/>
+    <img src="https://img.shields.io/badge/v-0.2.0-black"/>
     <img src="https://img.shields.io/badge/🔥-@je--es-black"/>
     <br>
     <img src="https://github.com/je-es/client/actions/workflows/ci.yml/badge.svg" alt="CI" />
