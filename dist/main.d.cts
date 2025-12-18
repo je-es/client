@@ -66,6 +66,7 @@ declare abstract class Component<P = Record<string, unknown>, S = Record<string,
     private _areDepsEqual;
     _invalidateAllComputed(): void;
     _triggerWatchers(propertyName: string, newValue: unknown, oldValue: unknown): void;
+    setElement(element: HTMLElement): void;
 }
 interface ComponentConstructor {
     __watchers__?: Record<string, string[]>;
@@ -784,9 +785,11 @@ declare class I18nManager {
      *
      * @param key Translation key
      * @param params Optional parameters for replacement
+     * @param defaultValue Optional default translation key
      * @returns Translated string with replaced parameters
      */
-    t(key: string, params?: Record<string, string>): string;
+    t(key: string, params?: Record<string, string>, defaultValue?: string): string;
+    private getTranslation;
     /**
      * Translate with a specific language (overrides current language temporarily)
      *
@@ -878,9 +881,10 @@ declare function getI18n(): I18nManager;
  * Global translation function
  * @param key Translation key
  * @param params Optional parameters
+ * @param defaultValue Optional default translation key
  * @returns Translated string
  */
-declare function t(key: string, params?: Record<string, string>): string;
+declare function t(key: string, params?: Record<string, string>, defaultValue?: string): string;
 /**
  * Translate with a specific language (overrides current language temporarily)
  * @param key Translation key
@@ -1270,7 +1274,7 @@ declare class Popup extends Component {
     /**
      * Close a specific popup
      */
-    closePopup(id: number, result: boolean | string | null | any): void;
+    closePopup(id: number, result: boolean | string | null | unknown): void;
     /**
      * Close all popups
      */
@@ -1294,7 +1298,7 @@ declare const popup: {
         onConfirm?: () => void | Promise<void>;
     }) => Promise<string | null>;
     showForm: (options: PopupFormOptions) => Promise<unknown>;
-    closePopup: (id: number, result: boolean | string | null | any) => void;
+    closePopup: (id: number, result: boolean | string | null | unknown) => void;
     closeLastPopup: () => void;
     closeFirstPopup: () => void;
     closeAll: () => void;
@@ -1517,14 +1521,6 @@ declare class Dropdown extends Component {
      */
     setOpen(open: boolean): void;
     /**
-     * Manually update the dropdown's DOM without triggering parent re-renders
-     */
-    private updateDOM;
-    /**
-     * Create DOM element from VNode (simplified version)
-     */
-    private createElementFromVNode;
-    /**
      * Toggle dropdown
      */
     toggle(e: Event): void;
@@ -1533,6 +1529,14 @@ declare class Dropdown extends Component {
      */
     handleItemClick(item: DropdownItemConfig, e: Event): void;
     render(): VNode;
+    /**
+     * Manually update the dropdown's DOM without triggering parent re-renders
+     */
+    private updateDOM;
+    /**
+     * Create DOM element from VNode (simplified version)
+     */
+    private createElementFromVNode;
     private renderTrigger;
     private renderMenu;
 }

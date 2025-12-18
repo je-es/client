@@ -19,18 +19,19 @@
 
         // ┌──────────────────────────────── INIT ──────────────────────────────┐
 
-            private translations: TranslationSet = {};
-            private currentLanguage: LanguageCode = 'en';
-            private defaultLanguage: LanguageCode = 'en';
-            private supportedLanguages = new Set<LanguageCode>(['en']);
-            private cachePath: string = '';
-            private readyListeners: (() => void)[] = [];
+            private translations            : TranslationSet    = {};
+            private currentLanguage         : LanguageCode      = 'en';
+            private defaultLanguage         : LanguageCode      = 'en';
+            private supportedLanguages      : Set<LanguageCode> = new Set<LanguageCode>(['en']);
+            private cachePath               : string            = '';
+            private readyListeners          : (() => void)[]    = [];
 
             constructor(config?: I18nConfig) {
                 if (config) {
-                    this.defaultLanguage = config.defaultLanguage || 'en';
-                    this.currentLanguage = this.getStoredLanguage() || config.defaultLanguage || 'en';
-                    this.cachePath = config.staticPath || 'static/i18n';
+                    this.defaultLanguage    = config.defaultLanguage    || 'en';
+                    this.cachePath          = config.staticPath         || 'static/i18n';
+                    this.currentLanguage    = this.getStoredLanguage()  || config.defaultLanguage || 'en';
+
                     if (config.supportedLanguages) {
                         this.supportedLanguages = new Set(config.supportedLanguages);
                     }
@@ -113,15 +114,13 @@
              *
              * @param key Translation key
              * @param params Optional parameters for replacement
+             * @param defaultValue Optional default translation key
              * @returns Translated string with replaced parameters
              */
-            public t(key: string, params?: Record<string, string>): string {
+            public t(key: string, params?: Record<string, string>, defaultValue?: string): string {
                 const lang = this.currentLanguage;
 
-                let translation =
-                    this.translations[lang]?.[key] ||
-                    this.translations[this.defaultLanguage]?.[key] ||
-                    key;
+                let translation = this.getTranslation(key, defaultValue);
 
                 if (params) {
                     Object.entries(params).forEach(([param, value]) => {
@@ -138,6 +137,19 @@
                 }
 
                 return translation;
+            }
+
+            private getTranslation(key: string, defaultValue?: string): string {
+                const lang = this.currentLanguage;
+
+                // warn if not found
+                if (!this.translations[lang]?.[key]) {
+                    console.warn(`Translation key not found: ${key}`);
+
+                    return defaultValue || key;
+                }
+
+                return this.translations[lang]?.[key] || this.translations[this.defaultLanguage]?.[key];
             }
 
             /**
@@ -182,7 +194,7 @@
             private parseHtmlString(htmlString: string): (VNode | string)[] {
                 // Replace both \n and /n with <br> tags
                 const processedString = htmlString.replace(/\\n|\/n/g, '<br>');
-                
+
                 const result: (VNode | string)[] = [];
                 const regex = /<([^/>]+)>([^<]*)<\/\1>|<([^/>]+)\s*\/?>|([^<]+)/g;
                 let match;
@@ -376,6 +388,12 @@
         // └────────────────────────────────────────────────────────────────────┘
     }
 
+// ╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+// ╔════════════════════════════════════════ HELP ════════════════════════════════════════╗
+
     // Singleton instance
     let i18nInstance: I18nManager | null = null;
 
@@ -393,20 +411,15 @@
 
     export type { TranslationSet, LanguageCode, I18nConfig };
 
-// ╚══════════════════════════════════════════════════════════════════════════════════════╝
-
-
-
-// ╔════════════════════════════════════════ HELP ════════════════════════════════════════╗
-
     /**
      * Global translation function
      * @param key Translation key
      * @param params Optional parameters
+     * @param defaultValue Optional default translation key
      * @returns Translated string
      */
-    export function t(key: string, params?: Record<string, string>): string {
-        return getI18n().t(key, params);
+    export function t(key: string, params?: Record<string, string>, defaultValue?: string): string {
+        return getI18n().t(key, params, defaultValue);
     }
 
     /**
@@ -448,11 +461,11 @@
      */
     export async function setLanguageAsync(lang: string, staticPath?: string): Promise<void> {
         const manager = getI18n();
-        
+
         // Check if language is already loaded
         const currentTranslations = manager.getTranslations();
         const isLanguageLoaded = Object.keys(currentTranslations).length > 0;
-        
+
         if (!isLanguageLoaded && staticPath) {
             // Language not loaded yet, try to lazy-load it
             const baseUrl = staticPath.endsWith('/') ? staticPath : staticPath + '/';
@@ -462,7 +475,7 @@
                 console.warn(`Failed to lazy-load language: ${lang}`, error);
             }
         }
-        
+
         manager.setLanguage(lang);
     }
 
@@ -583,7 +596,7 @@
             const baseUrl = config.staticPath.endsWith('/')
                 ? config.staticPath
                 : config.staticPath + '/';
-            
+
             // Get the language to load: stored language or default
             const langToLoad = manager.getLanguage();
             const langUrl = baseUrl + `${langToLoad}.json`;

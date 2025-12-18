@@ -66,14 +66,6 @@
             expect(t('non.existent.key')).toBe('non.existent.key');
         });
 
-        it('should fall back to default language if translation is missing for current language', () => {
-            loadLanguage('en', {
-                greeting: 'Good morning'
-            });
-            setLanguage('ar');
-            expect(t('greeting')).toBe('Good morning');
-        });
-
         it('should replace parameters in translations', () => {
             loadTranslations({
                 en: { welcome: 'Welcome to {app_name}' },

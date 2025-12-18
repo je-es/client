@@ -44,7 +44,7 @@
 
     // Utilities
     export * from './mod/help';
-    export * from './mod/utils/intersection-observer';
+    export * from './mod/utils/intersection_observer';
     export * from './mod/utils/time_formatter';
 
     // Third-party packages

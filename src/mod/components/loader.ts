@@ -17,37 +17,37 @@
 
 // ╔════════════════════════════════════════ INIT ════════════════════════════════════════╗
 
-    export type LoaderSize = 'small' | 'medium' | 'large';
-    export type LoaderVariant = 'spinner' | 'dots' | 'pulse';
+    export type LoaderSize          = 'small' | 'medium' | 'large';
+    export type LoaderVariant       = 'spinner' | 'dots' | 'pulse';
 
     export interface LoaderOptions {
-        message?: string;
-        variant?: LoaderVariant;
-        size?: LoaderSize;
-        overlay?: boolean;
+        message?                    : string;
+        variant?                    : LoaderVariant;
+        size?                       : LoaderSize;
+        overlay?                    : boolean;
     }
 
     // Blah Blah Style Map
     const bb_ = {
         loader: {
-            container: 'bb_loaderContainer',
-            containerOverlay: 'bb_loaderContainer--overlay',
-            bg: 'bb_loaderBg',
-            loader: 'bb_loader',
+            container               : 'bb_loaderContainer',
+            containerOverlay        : 'bb_loaderContainer--overlay',
+            bg                      : 'bb_loaderBg',
+            loader                  : 'bb_loader',
         },
 
         spinner: {
-            container: 'bb_loaderSpinnerContainer',
-            icon: 'bb_loaderSpinnerIcon',
-            dot: 'bb_loaderSpinnerDot',
-            pulse: 'bb_loaderSpinnerPulse',
-            text: 'bb_loaderSpinnerText',
+            container               : 'bb_loaderSpinnerContainer',
+            icon                    : 'bb_loaderSpinnerIcon',
+            dot                     : 'bb_loaderSpinnerDot',
+            pulse                   : 'bb_loaderSpinnerPulse',
+            text                    : 'bb_loaderSpinnerText',
         },
 
         progress: {
-            container: 'bb_loaderProgressContainer',
-            bar: 'bb_loaderProgressBar',
-            text: 'bb_loaderProgressText',
+            container               : 'bb_loaderProgressContainer',
+            bar                     : 'bb_loaderProgressBar',
+            text                    : 'bb_loaderProgressText',
         }
     };
 
@@ -108,7 +108,7 @@
         // └────────────────────────────────────────────────────────────────────┘
 
 
-        // ┌────────────────────────────────  UI  ──────────────────────────────┐
+        // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
             render() {
                 const containerClasses = [
