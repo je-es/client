@@ -1506,6 +1506,9 @@ interface DropdownConfig {
     parentId?: string;
     closeOnItemClick?: boolean;
     preventAutoClose?: boolean;
+    hideArrow?: boolean;
+    asIcon?: boolean;
+    className?: string;
     onOpen?: () => void;
     onClose?: () => void;
 }

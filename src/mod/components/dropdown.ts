@@ -39,6 +39,9 @@
         parentId?           : string;  // For nested dropdowns - ID of parent dropdown
         closeOnItemClick?   : boolean; // Default: true
         preventAutoClose?   : boolean; // Prevent closing when clicking inside menu (for interactive content)
+        hideArrow?          : boolean; // Hide the dropdown arrow
+        asIcon?             : boolean; // Apply bb_dropdown--asIcon class
+        className?          : string;  // Custom classes for dropdown container
 
         onOpen?             : () => void;
         onClose?            : () => void;
@@ -474,8 +477,16 @@
                 const trigger = this.renderTrigger();
                 const menu = this.isOpen ? this.renderMenu() : null;
 
+                const containerClasses = [
+                    'bb_dropdown',
+                    `bb_dropdown--${this.config.position || 'left'}`,
+                    this.isOpen ? 'bb_dropdown--open' : '',
+                    this.config.asIcon ? 'bb_dropdown--asIcon' : '',
+                    this.config.className || ''
+                ].filter(Boolean).join(' ');
+
                 return h('div', {
-                    className: `bb_dropdown bb_dropdown--${this.config.position || 'left'} ${this.isOpen ? 'bb_dropdown--open' : ''}`,
+                    className: containerClasses,
                     'data-dropdown-id': this.config.id
                 },
                     trigger,
@@ -576,6 +587,14 @@
                     );
                 }
 
+                const arrowClasses = [
+                    'bb_dropdownArrow',
+                    'fas',
+                    'fa-chevron-down',
+                    this.isOpen ? 'bb_dropdownArrow--open' : '',
+                    this.config.hideArrow ? 'hidden' : ''
+                ].filter(Boolean).join(' ');
+
                 return h('button', {
                     className: triggerClassName,
                     onclick: (e: Event) => this.toggle(e)
@@ -583,7 +602,7 @@
                     this.config.trigger.icon ? h('i', { className: this.config.trigger.icon }) : null,
                     this.config.trigger.text ? h('span', {}, this.config.trigger.text) : null,
                     h('i', {
-                        className: `bb_dropdownArrow fas fa-chevron-down ${this.isOpen ? 'bb_dropdownArrow--open' : ''}`
+                        className: arrowClasses
                     })
                 );
             }
