@@ -332,7 +332,7 @@ import { t } from '../services/i18n';
                                 onblur=${() => this.handleBlur(field.name)}
                                 class="bb_formFieldSelect"
                             >
-                                <option value="">Select...</option>
+                                <option value="">${t('global.please_select', {}, 'Select...')}</option>
                                 ${optionNodes}
                             </select>
                             ${field.error && field.touched ? html`

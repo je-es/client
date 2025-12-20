@@ -42,9 +42,11 @@
         hideArrow?          : boolean; // Hide the dropdown arrow
         asIcon?             : boolean; // Apply bb_dropdown--asIcon class
         className?          : string;  // Custom classes for dropdown container
+        defaultSelected?    : string;  // ID of item to be selected by default
 
         onOpen?             : () => void;
         onClose?            : () => void;
+        onSelect?           : (item: DropdownItemConfig) => void;  // Called when an item is selected
     }
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
@@ -469,6 +471,9 @@
 
                 // Call item's onclick handler
                 item.onclick?.(e);
+
+                // Call onSelect hook
+                this.config.onSelect?.(item);
             }
 
             render() {
@@ -625,11 +630,13 @@
                             });
                         }
 
+                        const isSelected = item.selected || (this.config.defaultSelected && item.id === this.config.defaultSelected);
+
                         const itemClassName = [
                             'bb_dropdownItem',
                             item.className || '',
                             item.disabled ? 'bb_dropdownItem--disabled' : '',
-                            item.selected ? 'bb_dropdownItem--selected' : ''
+                            isSelected ? 'bb_dropdownItem--selected' : ''
                         ].filter(Boolean).join(' ');
 
                         const buttonProps: {

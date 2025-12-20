@@ -810,9 +810,10 @@ declare class I18nManager {
      *
      * @param key Translation key
      * @param params Optional parameters for replacement
+     * @param defaultValue Optional default translation key
      * @returns Array of VNode and string elements that can be used as children
      */
-    tHtml(key: string, params?: Record<string, string>): (VNode | string)[];
+    tHtml(key: string, params?: Record<string, string>, defaultValue?: string): (VNode | string)[];
     /**
      * Parse HTML string into VNode and text elements
      * Converts \n and /n sequences to <br> tags
@@ -898,9 +899,10 @@ declare function tLang(key: string, lang: string, params?: Record<string, string
  * Useful for multiline translations with formatting like <br>
  * @param key Translation key
  * @param params Optional parameters
+ * @param defaultValue Optional default translation key
  * @returns Array of VNode and string elements that can be used as children
  */
-declare function tHtml(key: string, params?: Record<string, string>): (VNode | string)[];
+declare function tHtml(key: string, params?: Record<string, string>, defaultValue?: string): (VNode | string)[];
 /**
  * Set the current language globally (synchronous)
  * @param lang Language code
@@ -1509,8 +1511,10 @@ interface DropdownConfig {
     hideArrow?: boolean;
     asIcon?: boolean;
     className?: string;
+    defaultSelected?: string;
     onOpen?: () => void;
     onClose?: () => void;
+    onSelect?: (item: DropdownItemConfig) => void;
 }
 declare class Dropdown extends Component {
     config: DropdownConfig;

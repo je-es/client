@@ -179,10 +179,11 @@
              *
              * @param key Translation key
              * @param params Optional parameters for replacement
+             * @param defaultValue Optional default translation key
              * @returns Array of VNode and string elements that can be used as children
              */
-            public tHtml(key: string, params?: Record<string, string>): (VNode | string)[] {
-                const translation = this.t(key, params);
+            public tHtml(key: string, params?: Record<string, string>, defaultValue?: string): (VNode | string)[] {
+                const translation = this.t(key, params, defaultValue);
                 return this.parseHtmlString(translation);
             }
 
@@ -438,10 +439,11 @@
      * Useful for multiline translations with formatting like <br>
      * @param key Translation key
      * @param params Optional parameters
+     * @param defaultValue Optional default translation key
      * @returns Array of VNode and string elements that can be used as children
      */
-    export function tHtml(key: string, params?: Record<string, string>): (VNode | string)[] {
-        return getI18n().tHtml(key, params);
+    export function tHtml(key: string, params?: Record<string, string>, defaultValue?: string): (VNode | string)[] {
+        return getI18n().tHtml(key, params, defaultValue);
     }
 
     /**
