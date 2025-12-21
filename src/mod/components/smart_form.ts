@@ -248,7 +248,7 @@ import { t } from '../services/i18n';
                     }
                 }
 
-            } catch (error: unknown) {
+            } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : t('global.loading');
                 this.submitError = errorMessage;
 
@@ -295,7 +295,6 @@ import { t } from '../services/i18n';
                                 id=${field.name}
                                 name=${field.name}
                                 placeholder=${field.placeholder || ''}
-                                value=${String(value)}
                                 disabled=${String(field.disabled || this.isSubmitting)}
                                 oninput=${(e: Event) => {
                                     const target = e.target as HTMLTextAreaElement;
@@ -303,7 +302,7 @@ import { t } from '../services/i18n';
                                 }}
                                 onblur=${() => this.handleBlur(field.name)}
                                 class="bb_formFieldTextarea"
-                            ></textarea>
+                            >${String(value)}</textarea>
                             ${field.error && field.touched ? html`
                                 <span class="field-error">${field.error}</span>
                             ` : ''}
@@ -313,9 +312,10 @@ import { t } from '../services/i18n';
 
                 case 'select': {
                     const options = field.options || [];
-                    const optionNodes = options.map((opt: FormFieldOption) => html`
-                        <option value=${String(opt.value)}>${opt.label}</option>
-                    `);
+                    const optionNodes = options.map((opt: FormFieldOption) => {
+                        const isSelected = String(opt.value) === String(value);
+                        return html`<option value=${String(opt.value)} selected=${isSelected}>${opt.label}</option>`;
+                    });
 
                     return html`
                         <div class="bb_formField ${field.className || ''}">
@@ -323,7 +323,6 @@ import { t } from '../services/i18n';
                             <select
                                 id=${field.name}
                                 name=${field.name}
-                                value=${String(value)}
                                 disabled=${String(field.disabled || this.isSubmitting)}
                                 onchange=${(e: Event) => {
                                     const target = e.target as HTMLSelectElement;
@@ -332,7 +331,7 @@ import { t } from '../services/i18n';
                                 onblur=${() => this.handleBlur(field.name)}
                                 class="bb_formFieldSelect"
                             >
-                                <option value="">${t('global.please_select', {}, 'Select...')}</option>
+                                <option value="" selected=${String(value) === ''}>${t('global.please_select', {}, 'Select...')}</option>
                                 ${optionNodes}
                             </select>
                             ${field.error && field.touched ? html`
@@ -343,6 +342,7 @@ import { t } from '../services/i18n';
                 }
 
                 case 'checkbox': {
+                    const isChecked = Boolean(value);
                     return html`
                         <div class="bb_formField bb_formField-checkbox ${field.className || ''}">
                             <label>
@@ -350,7 +350,7 @@ import { t } from '../services/i18n';
                                     type="checkbox"
                                     id=${field.name}
                                     name=${field.name}
-                                    checked=${String(value)}
+                                    checked=${isChecked}
                                     disabled=${String(field.disabled || this.isSubmitting)}
                                     onchange=${(e: Event) => {
                                         const target = e.target as HTMLInputElement;

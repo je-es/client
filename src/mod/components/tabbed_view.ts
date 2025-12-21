@@ -364,13 +364,13 @@
                         // Check if it's a function
                         if (typeof tab.component === 'function') {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const ComponentClass = tab.component as any;
+                            const fn = tab.component as any;
 
                             // Check if it's a Component class (has prototype.render)
-                            if (ComponentClass.prototype && typeof ComponentClass.prototype.render === 'function') {
+                            if (fn.prototype && typeof fn.prototype.render === 'function') {
                                 // It's a Component class - create new instance
                                 if (!this.currentTabComponent) {
-                                    this.currentTabComponent = new ComponentClass();
+                                    this.currentTabComponent = new fn();
 
                                     // Schedule onMount
                                     if (this.currentTabComponent && typeof this.currentTabComponent.onMount === 'function') {
@@ -385,7 +385,7 @@
                                 return this.currentTabComponent!.render();
                             } else {
                                 // It's a function returning VNode
-                                return ComponentClass();
+                                return fn();
                             }
                         }
                     } catch (error) {

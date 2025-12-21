@@ -74,10 +74,8 @@
 
         // Data extraction
         initialItems?               : T[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        extractItems?               : (response: any) => T[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        extractTotal?               : (response: any) => number;
+        extractItems?               : (response: Record<string, unknown>) => T[];
+        extractTotal?               : (response: Record<string, unknown>) => number;
 
         // Authentication
         getAuthToken?               : () => string | null;

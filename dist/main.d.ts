@@ -731,7 +731,7 @@ declare class StyleManager {
  * CSS template literal tag
  * Usage: css`.class { color: red; }`
  */
-declare function css(strings: TemplateStringsArray, ...values: unknown[]): string;
+declare function css(strings: TemplateStringsArray, ...values: (string | number | boolean | null | undefined)[]): string;
 
 declare class I18nManager {
     private translations;
@@ -1203,7 +1203,7 @@ interface PopupOptions {
 }
 interface ActivePopup extends PopupOptions {
     id: number;
-    resolve?: (value: boolean | string | null | unknown) => void;
+    resolve?: (value: boolean | string | null | Record<string, unknown>) => void;
     inputValue?: string;
     isSubmitting?: boolean;
 }
@@ -1218,11 +1218,11 @@ declare class Popup extends Component {
     /**
      * Show a custom popup
      */
-    show(options: PopupOptions): Promise<boolean | string | null | unknown>;
+    show(options: PopupOptions): Promise<boolean | string | null | Record<string, unknown>>;
     /**
      * Show a form popup
      */
-    showForm(options: PopupFormOptions): Promise<unknown>;
+    showForm(options: PopupFormOptions): Promise<boolean | string | null | Record<string, unknown>>;
     /**
      * Show a confirmation dialog
      */
@@ -1276,7 +1276,7 @@ declare class Popup extends Component {
     /**
      * Close a specific popup
      */
-    closePopup(id: number, result: boolean | string | null | unknown): void;
+    closePopup(id: number, result: boolean | string | null | Record<string, unknown>): void;
     /**
      * Close all popups
      */
@@ -1288,7 +1288,7 @@ declare class Popup extends Component {
 declare function initPopup(container?: HTMLElement): Popup;
 declare function getPopup(): Popup;
 declare const popup: {
-    show: (options: PopupOptions) => Promise<unknown>;
+    show: (options: PopupOptions) => Promise<string | boolean | Record<string, unknown> | null>;
     confirm: (options: Parameters<Popup["confirm"]>[0]) => Promise<boolean>;
     alert: (options: Parameters<Popup["alert"]>[0]) => Promise<boolean>;
     prompt: (options: {
@@ -1299,8 +1299,8 @@ declare const popup: {
         messageTranslateKey?: string;
         onConfirm?: () => void | Promise<void>;
     }) => Promise<string | null>;
-    showForm: (options: PopupFormOptions) => Promise<unknown>;
-    closePopup: (id: number, result: boolean | string | null | unknown) => void;
+    showForm: (options: PopupFormOptions) => Promise<string | boolean | Record<string, unknown> | null>;
+    closePopup: (id: number, result: boolean | string | null | Record<string, unknown>) => void;
     closeLastPopup: () => void;
     closeFirstPopup: () => void;
     closeAll: () => void;
@@ -1410,8 +1410,8 @@ interface ItemsLoaderConfig<T> {
     onLoadMore?: (page: number, items: T[]) => void;
     onError?: (error: Error) => void;
     initialItems?: T[];
-    extractItems?: (response: any) => T[];
-    extractTotal?: (response: any) => number;
+    extractItems?: (response: Record<string, unknown>) => T[];
+    extractTotal?: (response: Record<string, unknown>) => number;
     getAuthToken?: () => string | null;
     enableInfiniteScroll?: boolean;
     scrollThreshold?: number;
@@ -1500,7 +1500,7 @@ interface DropdownConfig {
     trigger: {
         text?: string;
         icon?: string;
-        element?: () => unknown;
+        element?: () => VNode | HTMLElement;
         className?: string;
     };
     items: (DropdownItemConfig | 'divider')[];
@@ -1556,12 +1556,12 @@ declare function createDropdown(config: DropdownConfig): Dropdown;
  * Debounce function
  * Delays function execution until after wait time
  */
-declare function debounce<T extends (...args: never[]) => unknown>(fn: T, delay: number): (...args: Parameters<T>) => void;
+declare function debounce<T extends (...args: never[]) => any>(fn: T, delay: number): (...args: Parameters<T>) => void;
 /**
  * Throttle function
  * Limits function execution to once per time period
  */
-declare function throttle<T extends (...args: never[]) => unknown>(fn: T, delay: number): (...args: Parameters<T>) => void;
+declare function throttle<T extends (...args: never[]) => any>(fn: T, delay: number): (...args: Parameters<T>) => void;
 /**
  * Class names utility
  * Combines class names conditionally

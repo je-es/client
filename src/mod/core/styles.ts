@@ -116,7 +116,7 @@
      */
     export function css(
         strings: TemplateStringsArray,
-        ...values: unknown[]
+        ...values: (string | number | boolean | null | undefined)[]
     ): string {
         let result = '';
 

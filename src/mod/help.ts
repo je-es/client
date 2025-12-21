@@ -18,7 +18,8 @@
      * Debounce function
      * Delays function execution until after wait time
      */
-    export function debounce<T extends (...args: never[]) => unknown>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export function debounce<T extends (...args: never[]) => any>(
         fn: T,
         delay: number
     ): (...args: Parameters<T>) => void {
@@ -40,7 +41,8 @@
      * Throttle function
      * Limits function execution to once per time period
      */
-    export function throttle<T extends (...args: never[]) => unknown>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export function throttle<T extends (...args: never[]) => any>(
         fn: T,
         delay: number
     ): (...args: Parameters<T>) => void {

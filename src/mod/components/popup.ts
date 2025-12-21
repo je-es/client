@@ -68,7 +68,7 @@
 
     interface ActivePopup extends PopupOptions {
         id                          : number;
-        resolve?                    : (value: boolean | string | null | unknown) => void;
+        resolve?                    : (value: boolean | string | null | Record<string, unknown>) => void;
         inputValue?                 : string;
         isSubmitting?               : boolean;
     }
@@ -272,7 +272,7 @@
             /**
              * Show a custom popup
              */
-            show(options: PopupOptions): Promise<boolean | string | null | unknown> {
+            show(options: PopupOptions): Promise<boolean | string | null | Record<string, unknown>> {
                 return new Promise((resolve) => {
                     const id = this.nextId++;
 
@@ -297,7 +297,7 @@
             /**
              * Show a form popup
              */
-            showForm(options: PopupFormOptions): Promise<unknown> {
+            showForm(options: PopupFormOptions): Promise<boolean | string | null | Record<string, unknown>> {
                 return new Promise((resolve, _reject) => {
                     const id = this.nextId++;
 
@@ -314,8 +314,7 @@
                             try {
                                 // Call original onSubmit
                                 if (options.formConfig.onSubmit) {
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    await options.formConfig.onSubmit(data, undefined as any);
+                                    await options.formConfig.onSubmit(data, new Event('submit'));
                                 }
 
                                 this.closePopup(id, data);
@@ -393,7 +392,7 @@
                         variant: options.variant || 'default',
                         size: options.size || 'small',
                         icon: options.icon,
-                        resolve: resolve as (value: boolean | string | unknown) => void,
+                        resolve: resolve as (value: boolean | string | null | Record<string, unknown>) => void,
                         onConfirm: options.onConfirm,
                         onCancel: options.onCancel,
                         buttons: [
@@ -458,7 +457,7 @@
                         variant: options.variant || 'info',
                         size: options.size || 'small',
                         icon: options.icon,
-                        resolve: resolve as (value: boolean | string | unknown) => void,
+                        resolve: resolve as (value: boolean | string | null | Record<string, unknown>) => void,
                         onConfirm: options.onConfirm,
                         buttons: [
                             {
@@ -512,7 +511,7 @@
                         variant: 'default',
                         icon: options.icon,
                         inputValue: options.defaultValue || '',
-                        resolve: resolve as (value: boolean | string | unknown) => void,
+                        resolve: resolve as (value: boolean | string | null | Record<string, unknown>) => void,
                         onConfirm: options.onConfirm as (() => void | Promise<void>) | undefined,
                         onCancel: options.onCancel,
                         buttons: [
@@ -550,7 +549,7 @@
             /**
              * Close a specific popup
              */
-            closePopup(id: number, result: boolean | string | null | unknown) {
+            closePopup(id: number, result: boolean | string | null | Record<string, unknown>) {
                 const popup = this.popups.find(p => p.id === id);
                 if (popup?.resolve) {
                     popup.resolve(result);
@@ -660,7 +659,7 @@
         showForm: (options: PopupFormOptions) =>
             getPopup().showForm(options),
 
-        closePopup: (id: number, result: boolean | string | null | unknown) =>
+        closePopup: (id: number, result: boolean | string | null | Record<string, unknown>) =>
             getPopup().closePopup(id, result),
 
         closeLastPopup: () => getPopup().closePopup(getPopup().popups.length - 1, false),

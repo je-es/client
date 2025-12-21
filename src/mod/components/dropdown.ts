@@ -30,7 +30,7 @@
         trigger             : {
             text?           : string;
             icon?           : string;
-            element?        : () => unknown;
+            element?        : () => VNode | HTMLElement;
             className?      : string;
         };
 

@@ -106,7 +106,8 @@
          * Set a specific value in state
          */
         set<K extends keyof T>(key: K, value: T[K], action?: string): void {
-            this.setState({ [key]: value } as unknown as Partial<T>, action);
+            const update = { [key]: value } as unknown as Partial<T>;
+            this.setState(update, action);
         }
 
         /**
