@@ -156,6 +156,14 @@
         value: string | number;
     }
 
+    export interface FieldButtonConfig {
+        type: 'rules' | 'togglePassword' | 'custom';
+        icon?: string;
+        label?: string;
+        tooltip?: string;
+        onClick?: () => void | Promise<void>;
+    }
+
     export interface FormFieldConfig {
         name: string;
         label?: string;
@@ -167,6 +175,8 @@
         validation?: ValidationRule;
         disabled?: boolean;
         className?: string;
+        fieldButtons?: (FieldButtonConfig | 'rules' | 'togglePassword')[];
+        showValidationRules?: boolean;
     }
 
     export type FormSubmitHandler = (data: Record<string, unknown>, event: Event) => void | Promise<void>;

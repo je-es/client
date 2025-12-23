@@ -6,9 +6,11 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createDOMElement, createElement, VNode, VNodeChild } from "@je-es/vdom";
+    import { createDOMElement, div, input, p, button, span, i, type VNode, type VNodeChild } from "@je-es/vdom";
     import { Component }    from "../core/component";
     import { t }            from "../services/i18n";
+    import { ClassMaker }   from "../helpers";
+    import styleMap from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -16,20 +18,8 @@
 
 // ╔════════════════════════════════════════ INIT ════════════════════════════════════════╗
 
-    // Blah Blah Style Map
-    const bb_ = {
-        container           : 'bb_itemsLoaderContainer',
-        list                : 'bb_itemsLoaderList',
-        searchbar           : 'bb_itemsLoaderSearchbar',
-        loading             : 'bb_itemsLoaderLoading',
-        error               : 'bb_itemsLoaderError',
-        trigger             : 'bb_itemsLoaderTrigger',
-        end                 : 'bb_itemsLoaderEnd',
-        emptyState          : 'bb_tabbedviewEmptyState',
-        button              : 'bb_btn',
-        item                : 'bb_itemsLoader-item',
-        formFieldInput      : 'bb_formFieldInput',
-    };
+    // Reference to style map
+    const bb_ = styleMap.itemsLoader;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -859,13 +849,14 @@
 
         // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
-            render() {
-                return createElement('div', {
-                    className: this.config.containerClassName
-                },
+            render(): VNode {
+                return div(
+                    {
+                        class: this.config.containerClassName
+                    },
                     this.config.enableSearch ? this.renderSearchBar() : null,
-                    createElement('div', {
-                        className: bb_.list,
+                    div({
+                        class: bb_.list,
                         ref: (el: HTMLElement | null) => {
                             if (el) {
                                 this.itemsListContainer = el;
@@ -877,16 +868,19 @@
                     this.loadState.loading ? this.renderLoading() : null,
                     this.loadState.hasMore && !this.loadState.loading && this.items.length > 0 ? this.renderLoadMoreTrigger() : null,
                     !this.loadState.hasMore && this.items.length > 0 ? this.renderEndMessage() : null
-                );
+                ) as VNode;
             }
 
-            private renderSearchBar() {
-                return createElement('div', { className: bb_.searchbar },
-                    createElement('div', { className: 'row gap-sm' },
-                        createElement('i', { className: 'fas fa-search' }),
-                        createElement('input', {
+
+            private renderSearchBar(): VNode {
+                return div(
+                    bb_.searchbar,
+                    div(
+                        'row gap-sm',
+                        i(ClassMaker.fa('search')),
+                        input({
                             type: 'text',
-                            className: bb_.formFieldInput,
+                            class: bb_.formFieldInput,
                             placeholder: this.config.searchPlaceholder,
                             ref: (el: HTMLElement | null) => {
                                 if (el) {
@@ -899,52 +893,57 @@
                             }
                         })
                     )
-                );
+                ) as VNode;
             }
 
-            public renderEmptyState() {
+            public renderEmptyState(): VNode {
                 const config = this.config.emptyStateConfig!;
-                return createElement('div', { className: bb_.emptyState },
-                    createElement('i', { className: `__icon ${config.icon}` }),
-                    createElement('h3', { className: '__title' }, config.title),
-                    createElement('p', { className: '__desc' }, config.description)
-                );
+                return div(
+                    bb_.emptyState,
+                    i(`__icon ${config.icon}`),
+                    span('__title', config.title),
+                    p('__desc', config.description)
+                ) as VNode;
             }
 
-            private renderLoading() {
-                return createElement('div', { className: bb_.loading },
-                    createElement('i', { className: 'fas fa-spinner fa-spin' }),
-                    createElement('p', {}, this.config.loadingText)
-                );
+            private renderLoading(): VNode {
+                return div(
+                    bb_.loading,
+                    i(ClassMaker.fa('spinner') + ' fa-spin'),
+                    p({}, this.config.loadingText)
+                ) as VNode;
             }
 
-            private renderError() {
-                return createElement('div', { className: bb_.error },
-                    createElement('i', { className: 'fas fa-exclamation-triangle' }),
-                    createElement('p', {}, this.loadState.error),
-                    createElement('button', {
-                        className: `${bb_.button} secondary`,
-                        onclick: () => this.loadMore()
-                    },
-                        createElement('i', { className: 'fas fa-redo' }),
+            private renderError(): VNode {
+                return div(
+                    bb_.error,
+                    i(ClassMaker.fa('exclamation-triangle')),
+                    p({}, this.loadState.error),
+                    button(
+                        {
+                            class: `${bb_.button} secondary`,
+                            onclick: () => this.loadMore()
+                        },
+                        i(ClassMaker.fa('redo')),
                         ' Retry'
                     )
-                );
+                ) as VNode;
             }
 
-            private renderLoadMoreTrigger() {
-                return createElement('div', {
-                    className: bb_.trigger,
+            private renderLoadMoreTrigger(): VNode {
+                return div({
+                    class: bb_.trigger,
                     'data-load-more-trigger': 'true',
                     style: 'height: 1px; visibility: hidden;'
-                });
+                }) as VNode;
             }
 
-            private renderEndMessage() {
-                return createElement('div', { className: bb_.end },
-                    createElement('i', { className: 'fas fa-check-circle' }),
+            private renderEndMessage(): VNode {
+                return div(
+                    { class: bb_.end },
+                    i(ClassMaker.fa('check-circle')),
                     t(`All loaded`, { count: String(this.loadState.total) })
-                );
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘

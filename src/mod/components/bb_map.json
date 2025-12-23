@@ -1,0 +1,106 @@
+{
+    "form": {
+        "base": "bb_form",
+        "field": "bb_formField",
+        "fieldCheckbox": "bb_formFieldCheckbox",
+        "fieldInput": "bb_formFieldInput",
+        "fieldInputContainer": "bb_formFieldInputContainer",
+        "fieldInputButtons": "bb_formFieldInputButtons",
+        "fieldInputButton": "bb_formFieldInputButton",
+        "fieldInputButtonRules": "bb_formFieldInputButtonRules",
+        "fieldInputButtonRulesContent": "bb_formFieldInputButtonRulesContent",
+        "fieldTextarea": "bb_formFieldTextarea",
+        "fieldSelect": "bb_formFieldSelect",
+        "fieldLabel": "bb_formFieldLabel",
+        "fieldError": "bb_formFieldError",
+        "fieldTitle": "bb_formFieldTitle",
+        "buttonsContainer": "bb_formButtonsContainer",
+        "button": "bb_formButton",
+        "alert": "bb_formAlert",
+        "alertError": "bb_formAlert-error",
+        "alertSuccess": "bb_formAlert-success"
+    },
+    "toast": {
+        "container": "bb_toastContainer",
+        "toast": "bb_toast",
+        "icon": "bb_toastIcon",
+        "msg": "bb_toastMsg"
+    },
+    "loader": {
+        "container": "bb_loaderContainer",
+        "containerOverlay": "bb_loaderContainer--overlay",
+        "bg": "bb_loaderBg",
+        "loader": "bb_loader",
+        "spinner": {
+            "container": "bb_loaderSpinnerContainer",
+            "icon": "bb_loaderSpinnerIcon",
+            "dot": "bb_loaderSpinnerDot",
+            "pulse": "bb_loaderSpinnerPulse",
+            "text": "bb_loaderSpinnerText"
+        },
+        "progress": {
+            "container": "bb_loaderProgressContainer",
+            "bar": "bb_loaderProgressBar",
+            "text": "bb_loaderProgressText"
+        }
+    },
+    "popup": {
+        "container": "bb_popupContainer",
+        "overlay": "bb_popupOverlay",
+        "popup": {
+            "base": "bb_popup",
+            "close": "bb_popupClose"
+        },
+        "header": {
+            "container": "bb_popupHeader",
+            "icon": "bb_popupHeaderIcon",
+            "content": "bb_popupHeaderContent",
+            "title": "bb_popupHeaderContentTitle",
+            "description": "bb_popupHeaderContentDesc"
+        },
+        "body": {
+            "container": "bb_popupBody",
+            "message": "bb_popupBodyMsg",
+            "input": "bb_popupBodyInput",
+            "formContainer": "bb_popupBodyFormContainer"
+        },
+        "footer": "bb_popupFooter",
+        "button": "bb_btn"
+    },
+    "dropdown": {
+        "container": "bb_dropdown",
+        "trigger": "bb_dropdownTrigger",
+        "menu": "bb_dropdownMenu",
+        "item": "bb_dropdownItem",
+        "divider": "bb_dropdownDivider",
+        "icon": "bb_dropdownIcon"
+    },
+    "itemsLoader": {
+        "container": "bb_itemsLoaderContainer",
+        "list": "bb_itemsLoaderList",
+        "searchbar": "bb_itemsLoaderSearchbar",
+        "loading": "bb_itemsLoaderLoading",
+        "error": "bb_itemsLoaderError",
+        "trigger": "bb_itemsLoaderTrigger",
+        "end": "bb_itemsLoaderEnd",
+        "emptyState": "bb_tabbedviewEmptyState",
+        "button": "bb_btn",
+        "item": "bb_itemsLoader-item",
+        "formFieldInput": "bb_formFieldInput"
+    },
+    "tabbedView": {
+        "container": "bb_tabbedview",
+        "header": "bb_tabbedviewHeader",
+        "tab": {
+            "base": "bb_tabbedviewTab",
+            "active": "bb_tabbedviewTab--active",
+            "disabled": "bb_tabbedviewTab--disabled",
+            "badge": "bb_tabbedviewBadge"
+        },
+        "content": {
+            "container": "bb_tabbedviewContent",
+            "emptyState": "bb_tabbedviewEmptyState",
+            "error": "bb_tabbedviewError"
+        }
+    }
+}

@@ -6,10 +6,11 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement, VNode } from "@je-es/vdom";
+    import { type VNode, div, button, span, p, i }  from "@je-es/vdom";
     import { Component }            from "../core/component";
     import { state }                from "../core/decorators";
     import { t }                    from "../services/i18n";
+    import styleMap                 from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -18,24 +19,7 @@
 // ╔════════════════════════════════════════ INIT ════════════════════════════════════════╗
 
     // Blah Blah Style Map
-    const bb_ = {
-        container               : 'bb_tabbedview',
-
-        header                  : 'bb_tabbedviewHeader',
-
-        tab: {
-            base                : 'bb_tabbedviewTab',
-            active              : 'bb_tabbedviewTab--active',
-            disabled            : 'bb_tabbedviewTab--disabled',
-            badge               : 'bb_tabbedviewBadge',
-        },
-
-        content: {
-            container           : 'bb_tabbedviewContent',
-            emptyState          : 'bb_tabbedviewEmptyState',
-            error               : 'bb_tabbedviewError',
-        }
-    };
+    const { tabbedView: bb_ } = styleMap;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -238,7 +222,7 @@
 
         // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
-            render() {
+            render(): VNode {
                 const containerClass = [
                     bb_.container,
                     `bb_tabbedview__--${this.position}`,
@@ -246,24 +230,26 @@
                     this.className
                 ].filter(Boolean).join(' ');
 
-                return createElement('div', { className: containerClass },
+                return div(
+                    containerClass,
                     this.renderTabList(),
                     this.renderTabContent()
-                );
+                ) as VNode;
             }
 
-            renderTabList() {
+            renderTabList(): VNode {
                 const headerClass = [
                     bb_.header,
                     this.headerClassName
                 ].filter(Boolean).join(' ');
 
-                return createElement('div', { className: headerClass },
+                return div(
+                    headerClass,
                     ...this.tabs.map(tab => this.renderTab(tab))
-                );
+                ) as VNode;
             }
 
-            renderTab(tab: Tab) {
+            renderTab(tab: Tab): VNode {
                 const isActive = this.activeTabId === tab.id;
 
                 const tabClass = [
@@ -274,25 +260,27 @@
 
                 const label = tab.translateKey ? t(tab.translateKey) : tab.label;
 
-                return createElement('button', {
-                    key: tab.id,
-                    className: tabClass,
-                    onclick: () => this.setActiveTab(tab.id),
-                    disabled: tab.disabled,
-                    'data-translate': tab.translateKey,
-                    'aria-selected': isActive,
-                    role: 'tab'
-                },
-                    tab.icon ? createElement('i', { className: tab.icon }) : null,
-                    createElement('span', {}, label),
+                return button(
+                    {
+                        key: tab.id,
+                        class: tabClass,
+                        onclick: () => this.setActiveTab(tab.id),
+                        disabled: tab.disabled,
+                        'data-translate': tab.translateKey,
+                        'aria-selected': isActive,
+                        role: 'tab'
+                    },
+                    tab.icon ? i(tab.icon) : null,
+                    span({}, label),
                     tab.badge !== undefined && tab.badge !== null && tab.badge !== 0 ?
-                        createElement('span', { className: bb_.tab.badge },
+                        span(
+                            bb_.tab.badge,
                             typeof tab.badge === 'number' && tab.badge > 99 ? '99+' : String(tab.badge)
                         ) : null
-                );
+                ) as VNode;
             }
 
-            renderTabContent() {
+            renderTabContent(): VNode {
                 const contentClass = [
                     bb_.content.container,
                     this.contentClassName
@@ -300,22 +288,25 @@
 
                 const activeTab = this.getActiveTab();
                 if (!activeTab) {
-                    return createElement('div', { className: contentClass },
-                        createElement('div', { className: bb_.content.emptyState },
-                            createElement('p', {}, t('global.loading'))
+                    return div(
+                        contentClass,
+                        div(
+                            bb_.content.emptyState,
+                            p({}, t('tabbedView.no_content'))
                         )
-                    );
+                    ) as VNode;
                 }
 
-                return createElement('div', {
-                    className: contentClass,
-                    role: 'tabpanel'
-                },
+                return div(
+                    {
+                        class: contentClass,
+                        role: 'tabpanel'
+                    },
                     this.renderActiveTabContent(activeTab)
-                );
+                ) as VNode;
             }
 
-            renderActiveTabContent(tab: Tab) {
+            renderActiveTabContent(tab: Tab): VNode {
                 // If tab has a component class/function
                 if (tab.component) {
                     try {
@@ -358,7 +349,7 @@
                                 }, 0);
                             }
 
-                            return wrappedVNode;
+                            return wrappedVNode as VNode;
                         }
 
                         // Check if it's a function
@@ -382,17 +373,18 @@
                                     }
                                 }
 
-                                return this.currentTabComponent!.render();
+                                return this.currentTabComponent!.render() as VNode;
                             } else {
                                 // It's a function returning VNode
-                                return fn();
+                                return fn() as VNode;
                             }
                         }
                     } catch (error) {
                         console.error('Error rendering tab component:', error);
-                        return createElement('div', { className: bb_.content.error },
+                        return div(
+                            bb_.content.error,
                             t('global.loading')
-                        );
+                        ) as VNode;
                     }
                 }
 
@@ -402,9 +394,10 @@
                 }
 
                 // Fallback
-                return createElement('div', { className: bb_.content.emptyState },
-                    createElement('p', {}, t('global.loading'))
-                );
+                return div(
+                    bb_.content.emptyState,
+                    p({}, t('tabbedView.no_content'))
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘

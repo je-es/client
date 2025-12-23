@@ -244,9 +244,12 @@
         test('should show submit button', async () => {
             const form = new SmartFormComponent({
                 fields: [{ name: 'test', type: 'text' }],
-                submitButton: {
-                    label: 'Submit Form',
-                    className: 'custom-button'
+                buttons: {
+                    submit: {
+                        label: 'Submit Form',
+                        className: 'custom-button',
+                        onClick: 'submit'
+                    }
                 }
             });
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/mod/services/i18n.ts
 //
 // Made with ❤️ by Maysara.
@@ -46,14 +47,43 @@
             /**
              * Load translations for a specific language
              * @param lang Language code (e.g., 'en', 'ar', 'fr')
-             * @param translations Translation object
+             * @param translations Translation object (can be nested)
              */
-            public loadLanguage(lang: LanguageCode, translations: Record<string, string>): void {
+            public loadLanguage(lang: LanguageCode, translations: Record<string, any>): void {
                 if (!this.translations[lang]) {
                     this.translations[lang] = {};
                 }
-                this.translations[lang] = { ...this.translations[lang], ...translations };
+                // Flatten the nested translations
+                const flattened = this.flattenObject(translations);
+                this.translations[lang] = { ...this.translations[lang], ...flattened };
                 this.supportedLanguages.add(lang);
+            }
+
+            /**
+             * Flatten nested object into dot notation
+             * @param obj Nested object
+             * @param prefix Current prefix
+             * @returns Flattened object with dot notation keys
+             */
+            private flattenObject(obj: Record<string, any>, prefix: string = ''): Record<string, string> {
+                const flattened: Record<string, string> = {};
+
+                for (const key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                        const value = obj[key];
+                        const newKey = prefix ? `${prefix}.${key}` : key;
+
+                        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                            // Recursively flatten nested objects
+                            Object.assign(flattened, this.flattenObject(value, newKey));
+                        } else {
+                            // Store the value
+                            flattened[newKey] = String(value);
+                        }
+                    }
+                }
+
+                return flattened;
             }
 
             /**
@@ -100,19 +130,19 @@
              *
              * @example
              * // Simple translation
-             * t('hello') // => "Hello" or "مرحبا" depending on current language
+             * t('button.login') // => "Login" or "دخـول" depending on current language
              *
              * @example
              * // With parameters
-             * t('welcome', { app_name: 'MyApp' })
-             * // => "Welcome to MyApp"
+             * t('nav.credits', { count: '100' })
+             * // => "Available Credits: 100"
              *
              * @example
              * // With nested translation keys as parameters
-             * t('greeting', { salutation: 'hello' })
-             * // => "Say Hello to everyone"
+             * t('language.switching_to', { language: 'button.login' })
+             * // => "Switching to Login..."
              *
-             * @param key Translation key
+             * @param key Translation key (supports dot notation for nested keys)
              * @param params Optional parameters for replacement
              * @param defaultValue Optional default translation key
              * @returns Translated string with replaced parameters
@@ -175,7 +205,7 @@
              *
              * @example
              * // Translation: "Hello <br> World"
-             * tHtml('greeting') // => [text node, br element, text node]
+             * tHtml('page.home.title') // => [text node, br element, text node]
              *
              * @param key Translation key
              * @param params Optional parameters for replacement
@@ -414,7 +444,7 @@
 
     /**
      * Global translation function
-     * @param key Translation key
+     * @param key Translation key (supports dot notation for nested keys)
      * @param params Optional parameters
      * @param defaultValue Optional default translation key
      * @returns Translated string
@@ -491,17 +521,17 @@
     /**
      * Load translations for a specific language
      * @param lang Language code
-     * @param translations Translation object
+     * @param translations Translation object (can be nested)
      */
-    export function loadLanguage(lang: string, translations: Record<string, string>): void {
+    export function loadLanguage(lang: string, translations: Record<string, any>): void {
         getI18n().loadLanguage(lang, translations);
     }
 
     /**
      * Load all translations
-     * @param translations The translations object
+     * @param translations The translations object (can be nested)
      */
-    export function loadTranslations(translations: Record<string, Record<string, string>>): void {
+    export function loadTranslations(translations: Record<string, Record<string, any>>): void {
         getI18n().loadTranslations(translations);
     }
 
@@ -586,7 +616,7 @@
      *     supportedLanguages: ['en', 'ar'],
      *     staticPath: 'static/i18n'
      * });
-     * console.log(t('hello')); // Ready to use in current language!
+     * console.log(t('button.login')); // Ready to use in current language!
      */
     export async function setupI18n(config: I18nConfig): Promise<void> {
         // Initialize i18n with config

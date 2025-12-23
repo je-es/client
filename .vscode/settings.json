@@ -16,7 +16,8 @@
         "tsup.config.ts": true,
         "bunfig.toml": true,
         "tsconfig.json": true,
-        ".github": true
+        ".github": true,
+        "dist": true
     },
     "hide-files.files": [
         "eslint.config.mjs",
@@ -30,6 +31,7 @@
         "tsup.config.ts",
         "bunfig.toml",
         "tsconfig.json",
-        ".github"
+        ".github",
+        "dist"
     ]
 }

@@ -30,6 +30,9 @@
     export * from './mod/core/client';
     export * from './mod/core/styles';
 
+    // Helpers
+    export { ClassMaker, CM, ElementCreator, EC } from './mod/helpers';
+
     // Services
     export * from './mod/services/i18n';
 
@@ -37,7 +40,8 @@
     export * from './mod/components/toast';
     export * from './mod/components/loader';
     export * from './mod/components/popup';
-    export * from './mod/components/smart_form';
+    export { SmartForm, SmartFormComponent } from './mod/components/smart_form';
+    export type { FormConfig, ButtonConfig } from './mod/components/smart_form';
     export * from './mod/components/tabbed_view';
     export * from './mod/components/items_loader';
     export * from './mod/components/dropdown';
@@ -49,6 +53,17 @@
 
     // Third-party packages
     export { api, http, configureApi, getApiConfig, resetApiConfig, type ApiError } from '@je-es/capi';
-    export { createElement, html, patch, createDOMElement } from '@je-es/vdom';
+    export {
+        createElement, html, patch, createDOMElement, isVNode, validateVNode,
+        div, span, p, h1, h2, h3, h4, h5, h6, a, img, i, form, input, label, textarea, button, select, option,
+    } from '@je-es/vdom';
+
+    export type {
+        VNode, VNodeChild, VNodeProps, VNodeChildren
+    } from '@je-es/vdom';
+
+    // Built-in Style Map (BlahBlah)
+    import * as bbMapInternal from "./mod/components/bb_map.json";
+    export const bbMap = bbMapInternal;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

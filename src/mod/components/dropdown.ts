@@ -6,8 +6,9 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement as h, VNode, VNodeChild } from "@je-es/vdom";
+    import { button, div, span, i, type VNode, type VNodeChild } from "@je-es/vdom";
     import { Component } from "../core/component";
+    import styleMap from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -385,6 +386,7 @@
             public config       : DropdownConfig;
             public isOpen       = false;
             private mounted     = false;
+            private bb_         = styleMap.dropdown;
 
             constructor(config: DropdownConfig) {
                 super();
@@ -403,20 +405,20 @@
             onMount() {
                 this.mounted = true;
                 dropdownManager.register(this);
-            // console.log(`✅ Dropdown mounted: ${this.config.id}`);
+                // console.log(`✅ Dropdown mounted: ${this.config.id}`);
             }
 
             onUnmount() {
                 this.mounted = false;
                 dropdownManager.unregister(this.config.id);
-            // console.log(`🛑 Dropdown unmounted: ${this.config.id}`);
+                // console.log(`🛑 Dropdown unmounted: ${this.config.id}`);
             }
 
             /**
              * Public method to set open state (called by manager)
              */
             public setOpen(open: boolean) {
-            // console.log(`🔄 Dropdown ${this.config.id} setOpen(${open}), current: ${this.isOpen}`);
+                // console.log(`🔄 Dropdown ${this.config.id} setOpen(${open}), current: ${this.isOpen}`);
 
                 if (this.isOpen === open) return;
 
@@ -440,7 +442,7 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-            // console.log(`🖱️ Dropdown ${this.config.id} toggle clicked, current state: ${this.isOpen}`);
+                // console.log(`🖱️ Dropdown ${this.config.id} toggle clicked, current state: ${this.isOpen}`);
 
                 if (this.isOpen) {
                     dropdownManager.close(this.config.id);
@@ -459,7 +461,7 @@
                     return;
                 }
 
-            // console.log(`🎯 Item clicked in dropdown ${this.config.id}:`, item.label);
+                // console.log(`🎯 Item clicked in dropdown ${this.config.id}:`, item.label);
 
                 // Don't prevent propagation - let it bubble up
                 // But stop it if we're going to close
@@ -476,8 +478,9 @@
                 this.config.onSelect?.(item);
             }
 
-            render() {
-            // console.log(`🎨 Dropdown ${this.config.id} render(), isOpen: ${this.isOpen}`);
+
+            render(): VNode {
+                // console.log(`🎨 Dropdown ${this.config.id} render(), isOpen: ${this.isOpen}`);
 
                 const trigger = this.renderTrigger();
                 const menu = this.isOpen ? this.renderMenu() : null;
@@ -490,13 +493,14 @@
                     this.config.className || ''
                 ].filter(Boolean).join(' ');
 
-                return h('div', {
-                    className: containerClasses,
-                    'data-dropdown-id': this.config.id
-                },
+                return div(
+                    {
+                        class: containerClasses,
+                        'data-dropdown-id': this.config.id
+                    },
                     trigger,
                     menu
-                );
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘
@@ -575,7 +579,7 @@
             }
 
 
-            private renderTrigger() {
+            private renderTrigger(): VNode {
                 const customElement = this.config.trigger.element?.() as VNodeChild;
 
                 const triggerClassName = [
@@ -584,12 +588,13 @@
                 ].filter(Boolean).join(' ');
 
                 if (customElement) {
-                    return h('button', {
-                        className: triggerClassName,
-                        onclick: (e: Event) => this.toggle(e)
-                    },
+                    return button(
+                        {
+                            class: triggerClassName,
+                            onclick: (e: Event) => this.toggle(e)
+                        },
                         customElement
-                    );
+                    ) as VNode;
                 }
 
                 const arrowClasses = [
@@ -600,34 +605,31 @@
                     this.config.hideArrow ? 'hidden' : ''
                 ].filter(Boolean).join(' ');
 
-                return h('button', {
-                    className: triggerClassName,
-                    onclick: (e: Event) => this.toggle(e)
-                },
-                    this.config.trigger.icon ? h('i', { className: this.config.trigger.icon }) : null,
-                    this.config.trigger.text ? h('span', {}, this.config.trigger.text) : null,
-                    h('i', {
-                        className: arrowClasses
-                    })
-                );
+                return button(
+                    {
+                        class: triggerClassName,
+                        onclick: (e: Event) => this.toggle(e)
+                    },
+                    this.config.trigger.icon ? i(this.config.trigger.icon) : null,
+                    this.config.trigger.text ? span({}, this.config.trigger.text) : null,
+                    i(arrowClasses)
+                ) as VNode;
             }
 
-            private renderMenu() {
-                return h('div', {
-                    className: 'bb_dropdownMenu',
-                    onclick: (e: Event) => {
-                        // Only stop propagation if preventAutoClose is true
-                        if (this.config.preventAutoClose) {
-                            e.stopPropagation();
+            private renderMenu(): VNode {
+                return div(
+                    {
+                        class: 'bb_dropdownMenu',
+                        onclick: (e: Event) => {
+                            // Only stop propagation if preventAutoClose is true
+                            if (this.config.preventAutoClose) {
+                                e.stopPropagation();
+                            }
                         }
-                    }
-                },
-                    this.config.items.map((item, index) => {
+                    },
+                    ...this.config.items.map((item, index) => {
                         if (item === 'divider') {
-                            return h('div', {
-                                className: 'bb_dropdown__divider',
-                                key: `divider-${index}`
-                            });
+                            return div({ class: 'bb_dropdown__divider', key: `divider-${index}` }) as VNode;
                         }
 
                         const isSelected = item.selected || (this.config.defaultSelected && item.id === this.config.defaultSelected);
@@ -641,12 +643,12 @@
 
                         const buttonProps: {
                             key: string;
-                            className: string;
+                            class: string;
                             onclick: (e: Event) => void;
                             disabled?: boolean;
                         } = {
                             key: item.id || `item-${index}`,
-                            className: itemClassName,
+                            class: itemClassName,
                             onclick: (e: Event) => this.handleItemClick(item, e)
                         };
 
@@ -655,12 +657,13 @@
                             buttonProps.disabled = true;
                         }
 
-                        return h('button', buttonProps,
-                            item.icon ? h('i', { className: item.icon }) : null,
-                            h('span', {}, item.label)
-                        );
+                        return button(
+                            buttonProps,
+                            item.icon ? i(item.icon) : null,
+                            span({}, item.label)
+                        ) as VNode;
                     })
-                );
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘

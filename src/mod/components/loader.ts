@@ -6,10 +6,11 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement } from "@je-es/vdom";
     import { Component } from "../core/component";
+    import { div, type VNode } from "@je-es/vdom";
     import { state } from "../core/decorators";
     import { t } from "../services/i18n";
+    import styleMap from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -27,29 +28,8 @@
         overlay?                    : boolean;
     }
 
-    // Blah Blah Style Map
-    const bb_ = {
-        loader: {
-            container               : 'bb_loaderContainer',
-            containerOverlay        : 'bb_loaderContainer--overlay',
-            bg                      : 'bb_loaderBg',
-            loader                  : 'bb_loader',
-        },
-
-        spinner: {
-            container               : 'bb_loaderSpinnerContainer',
-            icon                    : 'bb_loaderSpinnerIcon',
-            dot                     : 'bb_loaderSpinnerDot',
-            pulse                   : 'bb_loaderSpinnerPulse',
-            text                    : 'bb_loaderSpinnerText',
-        },
-
-        progress: {
-            container               : 'bb_loaderProgressContainer',
-            bar                     : 'bb_loaderProgressBar',
-            text                    : 'bb_loaderProgressText',
-        }
-    };
+    // Reference to style map
+    const bb_ = styleMap.loader;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -110,77 +90,88 @@
 
         // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
-            render() {
+            render(): VNode {
+                const { loader: bb_ } = styleMap;
                 const containerClasses = [
-                    bb_.loader.container,
-                    this.overlay ? `${bb_.loader.containerOverlay}` : '',
-                    `${bb_.loader.container}--${this.size}`
+                    bb_.container,
+                    this.overlay ? `${bb_.containerOverlay}` : '',
+                    `${bb_.container}--${this.size}`
                 ].filter(Boolean).join(' ');
 
-                return createElement('div', {
-                    className: containerClasses,
-                    'data-status': this.visible ? 'visible' : 'hidden',
-                    role: 'status',
-                    'aria-live': 'polite',
-                    'aria-busy': 'true',
-                },
+                return div(
+                    {
+                        class: containerClasses,
+                        'data-status': this.visible ? 'visible' : 'hidden',
+                        role: 'status',
+                        'aria-live': 'polite',
+                        'aria-busy': 'true',
+                    },
                     // bg for blur
-                    createElement('div', { className: bb_.loader.bg }),
+                    div(bb_.bg),
 
-                    createElement('div', { className: bb_.loader.loader },
+                    div(
+                        bb_.loader,
                         this.renderSpinner(),
                         this.renderMessage(),
                         this.showProgress ? this.renderProgressBar() : null
                     )
-                );
+                ) as VNode;
             }
 
-            renderSpinner() {
+            renderSpinner(): VNode {
+                const { loader: bb_ } = styleMap;
                 const spinnerClass = `${bb_.spinner.container} ${bb_.spinner.container}--${this.variant}`;
 
                 switch (this.variant) {
                     case 'dots':
-                        return createElement('div', { className: spinnerClass },
-                            createElement('div', { className: bb_.spinner.dot }),
-                            createElement('div', { className: bb_.spinner.dot }),
-                            createElement('div', { className: bb_.spinner.dot })
-                        );
+                        return div(
+                            spinnerClass,
+                            div(bb_.spinner.dot),
+                            div(bb_.spinner.dot),
+                            div(bb_.spinner.dot)
+                        ) as VNode;
 
                     case 'pulse':
-                        return createElement('div', { className: spinnerClass },
-                            createElement('div', { className: bb_.spinner.pulse })
-                        );
+                        return div(
+                            spinnerClass,
+                            div(bb_.spinner.pulse)
+                        ) as VNode;
 
                     case 'spinner':
                     default:
-                        return createElement('div', { className: spinnerClass },
-                            createElement('div', { className: bb_.spinner.icon })
-                        );
+                        return div(
+                            spinnerClass,
+                            div(bb_.spinner.icon)
+                        ) as VNode;
                 }
             }
 
-            renderMessage() {
-                const text = this.message || t('global.loading');
+            renderMessage(): VNode {
+                const { loader: bb_ } = styleMap;
+                const text = this.message || t('loader.loading');
 
-                return createElement('div', {
-                    className: bb_.spinner.text,
-                    'data-translate': this.message ? undefined : 'global.loading'
-                }, text);
+                return div({
+                    class: bb_.spinner.text,
+                    'data-translate': this.message ? undefined : 'loader.loading'
+                }, text) as VNode;
             }
 
-            renderProgressBar() {
-                return createElement('div', { className: bb_.progress.container },
-                    createElement('div', {
-                        className: bb_.progress.bar,
+            renderProgressBar(): VNode {
+                const { loader: bb_ } = styleMap;
+                return div(
+                    bb_.progress.container,
+                    div({
+                        class: bb_.progress.bar,
                         style: `width: ${this.progress}%`,
                         'aria-valuenow': this.progress.toString(),
                         'aria-valuemin': '0',
                         'aria-valuemax': '100'
                     }),
-                    createElement('div', { className: bb_.progress.text },
+                    div(
+                        bb_.progress.text,
                         `${Math.round(this.progress)}%`
                     )
-                );
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘

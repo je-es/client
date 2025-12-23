@@ -1,6 +1,6 @@
 {
 	"name"                             : "@je-es/client",
-	"version"                          : "0.2.3",
+	"version"                          : "0.2.4",
 	"description"                      : "The simplest, fastest and most organized way to manage the front-end of web applications.",
 	"keywords"                         : [
 		"je-es",
@@ -50,7 +50,7 @@
 	},
 	"dependencies"                     : {
 		"@je-es/capi"                  : "^0.0.4",
-		"@je-es/vdom"                  : "0.0.2",
+		"@je-es/vdom"                  : "^0.0.4",
 		"sass"                         : "^1.94.2"
 	},
 	"devDependencies"                  : {

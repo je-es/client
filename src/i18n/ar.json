@@ -1,0 +1,520 @@
+{
+  "website": {
+    "title": "منظـومة"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "logo": "شعار منظـومة",
+    "dashboard": "لوحة التحكم",
+    "organizations": "المنظمات",
+    "repositories": "المستودعات",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "subscriptions": "الاشتراكات",
+    "credits": "العُملات المتاحة: {count}",
+    "admin": "الإدارة",
+    "admin_panel": "لوحة الإدارة",
+    "audit_logs": "سجل النشاط"
+  },
+  "theme": {
+    "switch_to": "تبديل السِـمة",
+    "dark": "داكِن",
+    "rose": "وردِي",
+    "hacker": "هاكِر"
+  },
+  "button": {
+    "login": "دخـول",
+    "create": "إنشـاء",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "logout": "تسجيل الخروج",
+    "home": "الرئيسية",
+    "back": "رجوع",
+    "yes_logout": "نعم، تسجيل الخروج",
+    "get_started_free": "ابدأ مجانًا",
+    "accept_continue": "قبول والمتابعة",
+    "save": "حفظ",
+    "change_password": "تغيير كلمة المرور",
+    "save_basic_info": "حفظ معلومات الأساسية",
+    "save_contact_info": "حفظ معلومات الإتصال",
+    "restore": "استعادة",
+    "loading": {
+      "logging_in": "جاري تسجيل الدخول...",
+      "creating_account": "جاري إنشاء الحساب...",
+      "logging_out": "جاري تسجيل الخروج..."
+    }
+  },
+  "page": {
+    "login": {
+      "title": "تسجيـل الدخـول",
+      "no_account": "ليـسَ لديـكَ حسـابٌ بَعد؟",
+      "create_free": "أنشئ واحدًا مجانيًا في ثوانٍ!",
+      "or": "أو",
+      "success": "تم تسجيل الدخول بنجاح",
+      "failed": "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد.",
+      "already_logged_in": "أنت مسجل الدخول بالفعل"
+    },
+    "register": {
+      "title": "إنشـاء حسـاب",
+      "have_account": "هل لديك حساب بالفعل؟",
+      "login_now": "سجّل دخولك الآن!",
+      "success": "تم إنشاء الحساب بنجاح",
+      "failed": "فشل التسجيل. يرجى المحاولة مجددًا.",
+      "terms_required": "يجب عليك قبول الشروط للمتابعة"
+    },
+    "home": {
+      "title": "أهلا بك في منظـومة!",
+      "subtitle": "ابني شيئًا مذهلًا اليوم"
+    },
+    "404": {
+      "title": "الصفحة غير موجودة",
+      "subtitle": "عفوًا, يبدو أن الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+    },
+    "dashboard": {
+      "subtitle": "أهلاً بعودتك! إليك ما يحدث."
+    }
+  },
+  "input": {
+    "placeholder": {
+      "username": "أدخِـل إسم المُستخـدم",
+      "password": "أدخِـل كلمة المُـرور",
+      "confirm_password": "أكِّـد كلمة المُـرور"
+    },
+    "label": {
+      "remember_me": "تذكرني",
+      "forgot_password": "هل نسيت كلمة المرور؟"
+    }
+  },
+  "validation": {
+    "required": {
+      "username": "اسم المُستخـدم مطلوب",
+      "password": "كلمة المرور مطلوبة"
+    },
+    "min_length": {
+      "username": "اسم المُستخـدم يجب أن يكون 3 أحرف على الأقل",
+      "password": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+    },
+    "password_mismatch": "كلمات المرور غير متطابقة",
+    "current_password_incorrect": "كلمة المرور الحالية غير صحيحة"
+  },
+  "form": {
+    "submit": "إرسـال",
+    "select_placeholder": "اختر...",
+    "success": "تم إرسال النموذج بنجاح",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "rule": {
+      "required": "هذا الحقل مطلوب",
+      "minLength": "الحد الأدنى {length} أحرف",
+      "maxLength": "الحد الأقصى {length} أحرف",
+      "min": "القيمة الدنيا: {value}",
+      "max": "القيمة العليا: {value}",
+      "email": "صيغة البريد الإلكتروني صحيحة مطلوبة",
+      "url": "صيغة URL صحيحة مطلوبة",
+      "pattern": "النمط لا يتطابق"
+    }
+  },
+  "toast": {
+    "success": "نجاح",
+    "error": "خطأ",
+    "info": "معلومة",
+    "warning": "تحذير"
+  },
+  "loader": {
+    "loading": "جاري التحميل...",
+    "loading_content": "يرجى الانتظار أثناء تحميل المحتوى"
+  },
+  "popup": {
+    "confirm_title": "تأكيد",
+    "alert_title": "تنبيه",
+    "close": "إغلاق",
+    "confirm_btn": "تأكيد",
+    "cancel_btn": "إلغاء"
+  },
+  "dropdown": {
+    "no_items": "لا توجد عناصر متاحة"
+  },
+  "itemsLoader": {
+    "load_more": "تحميل المزيد",
+    "loading": "جاري التحميل...",
+    "error": "فشل تحميل العناصر",
+    "end_message": "تم تحميل جميع العناصر"
+  },
+  "tabbedView": {
+    "no_content": "لا يوجد محتوى متاح"
+  },
+  "popup": {
+    "terms": {
+      "title": "الشروط والأحكام",
+      "message": "يرجى قراءة وقبول شروطنا وأحكامنا للمتابعة.",
+      "accepted": "تم قبول الشروط بنجاح",
+      "declined": "تم رفض الشروط"
+    },
+    "logout": {
+      "title": "تسجيل الخروج",
+      "message": "هل أنت متأكد من رغبتك في تسجيل الخروج؟<br>سيتعين عليك تسجيل الدخول مرة أخرى للوصول إلى حسابك.",
+      "success": "تم تسجيل الخروج بنجاح"
+    }
+  },
+  "notifications": {
+    "empty_state": {
+      "title": "لا توجد إشعارات",
+      "all": "أنت على اطلاع بكل شيء!",
+      "unread": "لا توجد إشعارات غير مقروءة",
+      "gifts": "لا توجد هدايا حتى الآن"
+    },
+    "search_placeholder": "ابحث عن إشعـارات...",
+    "delete_all_title": "حذف جميع الإشعارات",
+    "confirm_delete_all": "هل أنت متأكد من رغبتك في حذف جميع الإشعارات؟<br>لا يمكن التراجع عن هذا الإجراء.",
+    "view_all": "عرض الكل",
+    "mark_all_read": "تحديد الكل كمقروء",
+    "delete_all": "حذف الكل",
+    "deleted_successfully": "تم حذف الإشعار بنجاح",
+    "delete_failed": "فشل حذف الإشعار",
+    "marked_as_read": "تم وضع علامة على الإشعار كمقروء",
+    "mark_as_read_failed": "فشل وضع علامة على الإشعار كمقروء",
+    "all_marked_as_read": "تم وضع علامة على جميع الإشعارات كمقروءة",
+    "mark_all_as_read_failed": "فشل وضع علامة على جميع الإشعارات كمقروءة",
+    "all_deleted_successfully": "تم حذف جميع الإشعارات بنجاح",
+    "delete_all_failed": "فشل حذف جميع الإشعارات"
+  },
+  "audit_logs": {
+    "empty_state": {
+      "title": "لا توجد سجلات تدقيق",
+      "description": "لا توجد سجلات تدقيق متاحة",
+      "security": "لا توجد أحداث أمنية"
+    },
+    "search_placeholder": "ابحث عن سِـجـلّات..."
+  },
+  "payments": {
+    "empty_state": {
+      "title": "لا توجد عمليات دفع",
+      "description": "لا توجد سجلات دفع متاحة"
+    },
+    "search_placeholder": "ابحث عن المدفوعات..."
+  },
+  "invites": {
+    "empty_state": {
+      "title": "لا توجد دعوات",
+      "description": "لا توجد دعوات متاحة"
+    },
+    "search_placeholder": "ابحث عن الدعوات..."
+  },
+  "activity": {
+    "empty_state": {
+      "title": "لا توجد أنشطة",
+      "description": "لا توجد أنشطة متاحة"
+    },
+    "search_placeholder": "ابحث عن الأنشطة..."
+  },
+  "global": {
+    "mark_as_read": "وضع علامة كمقروء",
+    "delete": "حذف",
+    "loading": "جاري التحميل...",
+    "please_select": "إختـر ما يُناسبُـك"
+  },
+  "loading": "جاري التحميل...",
+  "filter": {
+    "all": "الكل",
+    "search": "بحث...",
+    "unread": "غير مقروء",
+    "gifts": "الهدايا",
+    "security": "الأمان"
+  },
+  "logs": {
+    "action": {
+      "login": "دخول",
+      "register": "تسجيل",
+      "welcome": "أهلًا بكَ في منظـومة!",
+      "gift": "لقد تلقيت هدية!",
+      "logout": "تسجيل الخروج",
+      "profile_update": "تحديث الملف الشخصي",
+      "password_change": "تغيير كلمة المرور",
+      "organization_created": "إنشاء منظمة",
+      "organization_deleted": "حذف منظمة"
+    },
+    "metadata": {
+      "ip": "IP",
+      "browser": "المتصفح",
+      "os": "نظام التشغيل",
+      "device": "الجهاز",
+      "date": "التاريخ",
+      "action": "العملية",
+      "system": "النظام",
+      "unknown": "غير معروف",
+      "localhost": "Localhost",
+      "organization": "المنظمة"
+    }
+  },
+  "language": {
+    "switching_to": "التبديل إلى {language}..."
+  },
+  "time": {
+    "just_now": "للتو",
+    "minute_ago": "مُنذُ دقيقة",
+    "minutes_ago": "مُنذُ {count} دقائق",
+    "hour_ago": "مُنذُ ساعة",
+    "hours_ago": "مُنذُ {count} ساعات",
+    "day_ago": "مُنذُ يوم",
+    "days_ago": "مُنذُ {count} أيام",
+    "week_ago": "مُنذُ أسبوع",
+    "weeks_ago": "مُنذُ {count} أسابيع",
+    "month_ago": "مُنذُ شهر",
+    "months_ago": "مُنذُ {count} أشهر",
+    "year_ago": "مُنذُ سنة",
+    "years_ago": "مُنذُ {count} سنوات"
+  },
+  "footer": {
+    "built_with_love": "مُـدار بـواسطة",
+    "author": "Maysara",
+    "terms": "شروط الخدمة",
+    "privacy": "سياسة الخصوصية"
+  },
+  "profile": {
+    "error": {
+      "user_not_found": "لم يتم العثور على المُستخـدم",
+      "load_failed": "فشل تحميل الملف الشخصي"
+    },
+    "tab": {
+      "overview": "نظرة عامة",
+      "settings": "الإعدادات",
+      "security": "الأمان"
+    },
+    "overview": {
+      "empty_title": "هممم, لسا في شوية شُـغل هنا, هنأجلها لبعدين . . !",
+      "empty_message": "في المُستقبل القريب, هتظهر هنا معلومات عامّة عن المُستخدم, زي الـbio وروابط الحسابات على مواقع التواصل وهكذا..!"
+    },
+    "settings": {
+      "section": {
+        "basic_info": "المعلومات الأساسية",
+        "contact": "معلومات الاتصال"
+      },
+      "label": {
+        "full_name": "الاسم الكامل",
+        "bio": "السيرة الذاتية",
+        "avatar": "الصورة الرمزية",
+        "website": "الموقع الإلكتروني",
+        "location": "الموقع الجغرافي"
+      },
+      "btn": {
+        "upload_avatar": "رفع صورة رمزية",
+        "uploading_avatar": "جاري الرفع..."
+      },
+      "avatar_uploaded": "تم رفع الصورة الرمزية بنجاح",
+      "save_success": "تم تحديث الملف الشخصي بنجاح",
+      "save_error": "فشل حفظ الملف الشخصي"
+    },
+    "security": {
+      "section": {
+        "password": "تغيير كلمة المرور"
+      },
+      "label": {
+        "current_password": "كلمة المرور الحالية",
+        "new_password": "كلمة المرور الجديدة",
+        "confirm_password": "تأكيد كلمة المرور"
+      },
+      "placeholder": {
+        "current_password": "أدخل كلمة المرور الحالية",
+        "new_password": "أدخل كلمة المرور الجديدة",
+        "confirm_password": "أكد كلمة المرور الجديدة"
+      },
+      "all_fields_required": "جميع الحقول مطلوبة",
+      "password_changed": "تم تغيير كلمة المرور بنجاح"
+    },
+    "menu": {
+      "settings": "الإعدادات",
+      "security": "الأمان",
+      "report": "الإبلاغ عن مستخدم"
+    }
+  },
+  "placeholder": {
+    "full_name": "أدخل اسمك الكامل",
+    "bio": "أخبرنا عن نفسك",
+    "website": "https://yourwebsite.com",
+    "location": "المدينة، الدولة"
+  },
+  "report": {
+    "title": "الإبلاغ عن مستخدم",
+    "description": "ساعدنا في الحفاظ على سلامة المجتمع من خلال الإبلاغ عن الانتهاكات",
+    "type": {
+      "label": "سبب الإبلاغ",
+      "spam": "بريد عشوائي",
+      "scam": "احتيال أو غش",
+      "harassment": "المضايقة أو التنمر",
+      "inappropriate": "محتوى غير مناسب",
+      "copyright": "انتهاك حقوق الطبع والنشر",
+      "impersonation": "انتحال الشخصية",
+      "other": "آخر"
+    },
+    "message": {
+      "label": "وصف المشكلة",
+      "placeholder": "يرجى تقديم تفاصيل حول سبب إبلاغك عن هذا المُستخـدم (10 أحرف على الأقل)..."
+    },
+    "submit": "تقديم الإبلاغ",
+    "submitting": "جاري الإرسال...",
+    "cancel": "إلغاء",
+    "success": "شكراً لك! تم استقبال إبلاغك وسيتم مراجعته من قبل فريقنا.",
+    "error": {
+      "not_eligible": "أنت غير مؤهل للإبلاغ عن المُستخـدمين حالياً",
+      "limit_reached": "لقد وصلت إلى حد الإبلاغات اليومية (3 في اليوم)",
+      "already_reported": "لقد أبلغت بالفعل عن هذا المُستخـدم اليوم",
+      "self_report": "لا يمكنك الإبلاغ عن نفسك"
+    },
+    "remaining": "لديك {count} إبلاغات متبقية اليوم",
+    "account_age_warning": "يجب أن يكون حسابك قديماً على الأقل يوم واحد للإبلاغ عن المُستخـدمين"
+  },
+  "admin": {
+    "title": "لوحة المسؤول",
+    "subtitle": "إدارة المُستخـدمين والإبلاغات",
+    "tab": {
+      "users": "إدارة المُستخـدمين",
+      "reports": "إدارة الإبلاغات"
+    },
+    "users": {
+      "filter": {
+        "all": "جميع المُستخـدمين",
+        "admin": "المسؤولون فقط",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "active_users": "نَشِـط",
+        "deleted_users": "مَحـذوف",
+        "all_users": "الكُـل"
+      },
+      "sort": {
+        "newest": "الأحدث",
+        "oldest": "الأقدم",
+        "active": "آخر نشاط",
+        "name": "الاسم (أ-ي)"
+      },
+      "search": "ابحث عن اسم المُستخـدم أو الاسم أو البريد الإلكتروني...",
+      "role": "الدور",
+      "email": "البريد الإلكتروني",
+      "credits": "الرصيد",
+      "status": "الحالة",
+      "joined": "تاريخ الانضمام",
+      "actions": {
+        "edit": "تحرير",
+        "delete": "حذف",
+        "change_role": "تغيير الدور",
+        "restore": "استعادة",
+        "view_details": "عرض التفاصيل"
+      },
+      "action": {
+        "promote": "جعل مسؤول",
+        "demote": "إزالة الصلاحيات",
+        "block": "حظر المُستخـدم",
+        "unblock": "إلغاء الحظر",
+        "delete": "حذف المُستخـدم"
+      },
+      "confirmation": {
+        "promote": "هل أنت متأكد من رغبتك في جعل هذا المُستخـدم مسؤولاً؟",
+        "demote": "هل أنت متأكد من رغبتك في إزالة صلاحيات المسؤول؟",
+        "block": "هل أنت متأكد من رغبتك في حظر هذا المُستخـدم؟",
+        "unblock": "هل أنت متأكد من رغبتك في إلغاء حظر هذا المُستخـدم؟",
+        "delete": "هل أنت متأكد من رغبتك في حذف هذا المُستخـدم؟<br/>لا يمكن التراجع عن هذا الإجراء."
+      },
+      "edit_title": "تحرير المُستخـدم",
+      "edit_name": "الاسم الكامل",
+      "edit_role": "الدور",
+      "edit_confirm": "حفظ التغييرات",
+      "edit_submit": "تحديث",
+      "delete_title": "حذف المُستخـدم",
+      "delete_confirm": "هل أنت متأكد من رغبتك في حذف هذا المُستخـدم؟<br/>لا يمكن التراجع عن هذا الإجراء.",
+      "delete_success": "تم حذف المُستخـدم بنجاح",
+      "edit_success": "تم تحديث المُستخـدم بنجاح",
+      "restore_confirm": "هل أنت متأكد من رغبتك في استعادة هذا المُستخـدم المحذوف؟",
+      "restore_success": "تم استعادة المُستخـدم بنجاح",
+      "details_title": "تفاصيل المُستخـدم"
+    },
+    "reports": {
+      "filter": {
+        "all": "جميع الإبلاغات",
+        "pending": "قيد الانتظار",
+        "reviewing": "قيد المراجعة",
+        "resolved": "تم الحل",
+        "rejected": "مرفوض"
+      },
+      "sort": {
+        "newest": "الأحدث",
+        "oldest": "الأقدم",
+        "type": "النوع (أ-ي)"
+      },
+      "search": "ابحث عن الوصف أو النوع...",
+      "reporter": "المبلغ",
+      "reported": "المُستخـدم المبلغ عنه",
+      "type": "النوع",
+      "status": "الحالة",
+      "submitted": "تاريخ الإرسال",
+      "action": {
+        "review": "مراجعة",
+        "resolve": "حل",
+        "reject": "رفض"
+      },
+      "notes": "ملاحظات المسؤول"
+    },
+    "search": {
+      "users": "البحث عن المُستخـدمين...",
+      "reports": "ابحث عن الإبلاغات..."
+    },
+    "empty": {
+      "users": "لم يتم العثور على مستخدمين",
+      "users_desc": "حاول تعديل البحث أو المرشحات",
+      "active_users_desc": "لم يتم العثور على مستخدمين نشطين",
+      "deleted_users_desc": "لم يتم العثور على مستخدمين محذوفين",
+      "reports": "لم يتم العثور على إبلاغات",
+      "reports_desc": "حاول تعديل البحث أو المرشحات"
+    }
+  },
+  "role": {
+    "admin": "مسؤول",
+    "user": "مستخدم",
+    "partner": "شريك"
+  },
+  "errors": {
+    "failed_to_update": "فشل تحديث المُستخـدم",
+    "failed_to_delete": "فشل حذف المُستخـدم",
+    "failed_to_restore": "فشل استعادة المُستخـدم",
+    "something_went_wrong": "حدث خطأ ما",
+    "user_has_dependencies": "المُستخـدم لديه بيانات مرتبطة ولا يمكن حذفه",
+    "failed_to_create": "فشل الإنشاء"
+  },
+  "All loaded": "تم تحميل جميع العناصر",
+  "subscriptions": {
+    "empty": {
+      "title": "لا توجد اشتراكات",
+      "description": "لم تقم بإنشاء أي اشتراكات بعد"
+    },
+    "filter": {
+      "active": "نشط",
+      "expired": "منتهي",
+      "cancelled": "ملغى"
+    }
+  },
+  "organizations": {
+    "empty": {
+      "title": "لا توجد منظمات",
+      "description": "انقر على زر '+' أعلاه لإنشاء منظمة جديدة"
+    },
+    "search": "ابحث عن المنظمات...",
+    "form": {
+      "name": "اسم المنظمة",
+      "name_placeholder": "أدخل اسم المنظمة",
+      "display_name": "اسم العرض",
+      "display_name_placeholder": "الاسم المعروض للجمهور",
+      "description": "الوصف",
+      "description_placeholder": "اختياري: وصف المنظمة"
+    },
+    "create_title": "منظمة جديدة",
+    "create_success": "تم إنشاء المنظمة بنجاح",
+    "delete_title": "حذف المنظمة",
+    "delete_success": "تم حذف المنظمة بنجاح",
+    "max_orgs_reached": "لقد وصلت إلى الحد الأقصى من المنظمات (3 لكل حساب)"
+  },
+  "recharge": {
+    "title": "أضف أرصدة",
+    "description": "لقد نفذت أرصدتك. أضف المزيد من الأرصدة لمتابعة استخدام الخدمة.",
+    "packages": "خطط الأرصدة"
+  }
+}

@@ -6,11 +6,13 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement, VNode }     from "@je-es/vdom";
+    import { type VNode, div, button, h2, p, i, input }     from "@je-es/vdom";
     import { Component }                from "../core/component";
     import { state }                    from "../core/decorators";
     import { t, tHtml }                 from "../services/i18n";
     import { FormConfig, SmartForm }    from "./smart_form";
+    import { ClassMaker }               from "../helpers";
+    import styleMap from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -73,35 +75,8 @@
         isSubmitting?               : boolean;
     }
 
-    // Blah Blah Style Map
-    const bb_ = {
-        container                   : 'bb_popupContainer',
-
-        overlay                     : 'bb_popupOverlay',
-
-        popup: {
-            base                    : 'bb_popup',
-            close                   : 'bb_popupClose',
-        },
-
-        header: {
-            container               : 'bb_popupHeader',
-            icon                    : 'bb_popupHeaderIcon',
-            content                 : 'bb_popupHeaderContent',
-            title                   : 'bb_popupHeaderContentTitle',
-            description             : 'bb_popupHeaderContentDesc',
-        },
-
-        body: {
-            container               : 'bb_popupBody',
-            message                 : 'bb_popupBodyMsg',
-            input                   : 'bb_popupBodyInput',
-            formContainer           : 'bb_popupBodyFormContainer',
-        },
-
-        footer                      : 'bb_popupFooter',
-        button                      : 'bb_btn',
-    };
+    // Reference to style map
+    const bb_ = styleMap.popup;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -142,63 +117,72 @@
 
         // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
-            render() {
+            render(): VNode {
                 if (this.popups.length === 0) {
-                    return createElement('div', { className: bb_.container });
+                    return div(bb_.container) as VNode;
                 }
 
-                return createElement('div', { className: bb_.container },
+                return div(
+                    bb_.container,
                     ...this.popups.map(popup => this.renderPopup(popup))
-                );
+                ) as VNode;
             }
 
-            renderPopup(popup: ActivePopup) {
+            renderPopup(popup: ActivePopup): VNode {
                 const sizeClass = `bb_popup--${popup.size || 'medium'}`;
                 const variantClass = popup.variant ? `bb_popup--${popup.variant}` : '';
 
-                return createElement('div', {
-                    key: String(popup.id),
-                    className: bb_.overlay,
-                    'data-popup-id': popup.id,
-                    onClick: (e: Event) => {
-                        if ((e.target as HTMLElement).classList.contains(bb_.overlay) &&
-                            popup.closeOnOverlay !== false) {
-                            this.closePopup(popup.id, false);
+                return div(
+                    {
+                        key: String(popup.id),
+                        class: bb_.overlay,
+                        'data-popup-id': popup.id,
+                        onclick: (e: Event) => {
+                            if ((e.target as HTMLElement).classList.contains(bb_.overlay) &&
+                                popup.closeOnOverlay !== false) {
+                                this.closePopup(popup.id, false);
+                            }
                         }
-                    }
-                },
-                    createElement('div', {
-                        className: `${bb_.popup.base} ${sizeClass} ${variantClass}`,
-                        role: 'dialog',
-                        'aria-modal': 'true',
-                        'aria-labelledby': `popup-title-${popup.id}`
                     },
-                        // Close button
-                        popup.showCloseButton !== false ? createElement('button', {
-                            className: bb_.popup.close,
-                            onClick: () => this.closePopup(popup.id, false),
-                            'aria-label': 'Close'
+                    div(
+                        {
+                            class: `${bb_.popup.base} ${sizeClass} ${variantClass}`,
+                            role: 'dialog',
+                            'aria-modal': 'true',
+                            'aria-labelledby': `popup-title-${popup.id}`
                         },
-                            createElement('i', { className: 'fas fa-times' })
+                        // Close button
+                        popup.showCloseButton !== false ? button(
+                            {
+                                class: bb_.popup.close,
+                                onclick: () => this.closePopup(popup.id, false),
+                                'aria-label': 'Close'
+                            },
+                            i(ClassMaker.fa('times'))
                         ) : null,
 
                         // Header
-                        createElement('div', { className: bb_.header.container },
-                            popup.icon ? createElement('div', { className: bb_.header.icon },
-                                createElement('i', { className: popup.icon })
+                        div(
+                            bb_.header.container,
+                            popup.icon ? div(
+                                bb_.header.icon,
+                                i(popup.icon)
                             ) : null,
-                            createElement('div', { className: bb_.header.content },
-                                createElement('h2', {
-                                    id: `popup-title-${popup.id}`,
-                                    className: bb_.header.title,
-                                    'data-translate': popup.titleTranslateKey
-                                },
+                            div(
+                                bb_.header.content,
+                                h2(
+                                    {
+                                        id: `popup-title-${popup.id}`,
+                                        class: bb_.header.title,
+                                        'data-translate': popup.titleTranslateKey
+                                    },
                                     popup.titleTranslateKey ? t(popup.titleTranslateKey) : popup.title
                                 ),
-                                popup.description ? createElement('p', {
-                                    className: bb_.header.description,
-                                    'data-translate': popup.descriptionTranslateKey
-                                },
+                                popup.description ? p(
+                                    {
+                                        class: bb_.header.description,
+                                        'data-translate': popup.descriptionTranslateKey
+                                    },
                                     popup.descriptionTranslateKey
                                         ? tHtml(popup.descriptionTranslateKey)
                                         : popup.description
@@ -207,32 +191,33 @@
                         ),
 
                         // Body
-                        createElement('div', { className: bb_.body.container },
-                            popup.message ? createElement('p', {
-                                className: bb_.body.message,
-                                'data-translate': popup.messageTranslateKey
-                            },
+                        div(
+                            bb_.body.container,
+                            popup.message ? p(
+                                {
+                                    class: bb_.body.message,
+                                    'data-translate': popup.messageTranslateKey
+                                },
                                 popup.messageTranslateKey
                                     ? tHtml(popup.messageTranslateKey)
                                     : popup.message
                             ) : null,
 
                             // Prompt input
-                            popup.type === 'prompt' ? createElement('input', {
+                            popup.type === 'prompt' ? input({
                                 type: 'text',
-                                className: bb_.body.input,
+                                class: bb_.body.input,
                                 value: popup.inputValue || '',
                                 placeholder: t('popup.prompt.placeholder'),
                                 'data-translate': 'popup.prompt.placeholder',
-                                onInput: (e: Event) => {
+                                oninput: (e: Event) => {
                                     popup.inputValue = (e.target as HTMLInputElement).value;
                                 }
                             }) : null,
 
                             // Form rendering
-                            popup.type === 'form' && popup.formConfig ? createElement('div', {
-                                className: bb_.body.formContainer
-                            },
+                            popup.type === 'form' && popup.formConfig ? div(
+                                bb_.body.formContainer,
                                 SmartForm(popup.formConfig)
                             ) : null,
 
@@ -241,27 +226,27 @@
                         ),
 
                         // Footer with buttons
-                        popup.buttons && popup.buttons.length > 0 && popup.type !== 'form' ? createElement('div', {
-                            className: bb_.footer
-                        },
-                            ...popup.buttons.map(button => createElement('button', {
-                                className: `${bb_.button} ${button.variant || 'secondary'}`,
-                                'data-translate': button.translateKey,
-                                disabled: button.loading || popup.isSubmitting,
-                                onClick: async () => {
-                                    if (button.loading || popup.isSubmitting) return;
-                                    await button.onClick();
-                                }
-                            },
-                                button.icon ? createElement('i', { className: button.icon }) : null,
-                                button.loading || popup.isSubmitting ?
-                                    createElement('i', { className: 'fas fa-spinner fa-spin' }) : null,
+                        popup.buttons && popup.buttons.length > 0 && popup.type !== 'form' ? div(
+                            bb_.footer,
+                            ...popup.buttons.map(btn => button(
+                                {
+                                    class: `${bb_.button} ${btn.variant || 'secondary'}`,
+                                    'data-translate': btn.translateKey,
+                                    disabled: btn.loading || popup.isSubmitting,
+                                    onclick: async () => {
+                                        if (btn.loading || popup.isSubmitting) return;
+                                        await btn.onClick();
+                                    }
+                                },
+                                btn.icon ? i(btn.icon) : null,
+                                btn.loading || popup.isSubmitting ?
+                                    i(ClassMaker.fa('spinner', 'solid') + ' fa-spin') : null,
                                 ' ',
-                                button.translateKey ? t(button.translateKey) : button.label
+                                btn.translateKey ? t(btn.translateKey) : btn.label
                             ))
                         ) : null
                     )
-                );
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘
@@ -331,9 +316,12 @@
                                 }
                             }
                         },
-                        submitButton: {
-                            ...options.formConfig.submitButton,
-                            className: options.formConfig.submitButton?.className || `${bb_.button} primary wide`
+                        buttons: options.formConfig.buttons || {
+                            submit: {
+                                label: t('global.submit', {}, 'Submit'),
+                                className: `${bb_.button} primary wide`,
+                                onClick: 'submit'
+                            }
                         }
                     };
 
@@ -400,7 +388,7 @@
                                 label: options.cancelLabel || 'Cancel',
                                 translateKey: options.cancelTranslateKey || 'button.cancel',
                                 variant: 'secondary',
-                                icon: 'fas fa-times',
+                                icon: ClassMaker.fa('times'),
                                 onClick: async () => {
                                     if (options.onCancel) {
                                         await options.onCancel();
@@ -412,7 +400,7 @@
                                 label: options.confirmLabel || 'Confirm',
                                 translateKey: options.confirmTranslateKey || 'button.confirm',
                                 variant: options.variant === 'danger' ? 'danger' : 'primary',
-                                icon: 'fas fa-check',
+                                icon: ClassMaker.fa('check'),
                                 onClick: async () => {
                                     if (options.onConfirm) {
                                         await options.onConfirm();
@@ -464,7 +452,7 @@
                                 label: options.okLabel || 'OK',
                                 translateKey: options.okTranslateKey || 'popup.ok',
                                 variant: 'primary',
-                                icon: 'fas fa-check',
+                                icon: ClassMaker.fa('check'),
                                 onClick: async () => {
                                     if (options.onConfirm) {
                                         await options.onConfirm();

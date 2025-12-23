@@ -6,10 +6,13 @@
 
 // ╔════════════════════════════════════════ PACK ════════════════════════════════════════╗
 
-    import { createElement, html } from "@je-es/vdom";
-    import { Component } from "../core/component";
-    import { state } from "../core/decorators";
-    import { t } from "../services/i18n";
+    import { Component } from '../core/component';
+    import { div, html, i, span } from '@je-es/vdom';
+    import { ClassMaker } from '../helpers';
+    import { state } from '../core/decorators';
+    import { t } from '../services/i18n';
+    import type { VNode } from '../../types';
+    import styleMap from './bb_map.json';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -26,13 +29,8 @@
         translateKey?: string;
     }
 
-    // Blah Blah Style Map
-    const bb_ = {
-        toast: 'bb_toast',
-        container: 'bb_toastContainer',
-        icon: 'bb_toastIcon',
-        msg: 'bb_toastMsg'
-    };
+    // Reference to style map
+    const bb_ = styleMap.toast;
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -63,7 +61,8 @@
                 this.messages = [...this.messages, { id, message, type, translateKey }];
 
                 setTimeout(() => {
-                    this.messages = this.messages.filter(m => m.id !== id);
+                    this.messages = this.messages.filter(msg => msg.id !== id);
+                    this.update();
                 }, duration);
             }
 
@@ -91,38 +90,34 @@
 
         // ┌──────────────────────────────── ──── ──────────────────────────────┐
 
-            render() {
+            render(): VNode {
                 if (this.messages.length === 0) return html``;
 
-                return createElement('div', {
-                    className: bb_.container
-                },
+                return div(
+                    bb_.container,
                     ...this.messages.map(msg => this.renderToast(msg))
-                );
+                ) as VNode;
             }
 
-            renderToast(msg: ToastMessage) {
-                const icons = {
-                    success: 'fas fa-check-circle',
-                    error: 'fas fa-exclamation-circle',
-                    info: 'fas fa-info-circle',
-                    warning: 'fas fa-exclamation-triangle'
+            renderToast(msg: ToastMessage): VNode {
+                const iconMap = {
+                    success: ClassMaker.fa('check-circle'),
+                    error: ClassMaker.fa('exclamation-circle'),
+                    info: ClassMaker.fa('info-circle'),
+                    warning: ClassMaker.fa('exclamation-triangle')
                 };
 
                 const displayMessage = msg.translateKey ? t(msg.translateKey) : msg.message;
 
-                return createElement('div', {
-                    key: String(msg.id),
-                    className: `${bb_.toast} ${bb_.toast}--${msg.type}`,
-                    'data-translate': msg.translateKey || undefined
-                },
-                    createElement('i', {
-                        className: `${icons[msg.type]} ${bb_.icon}`
-                    }),
-                    createElement('span', {
-                        className: bb_.msg
-                    }, displayMessage)
-                );
+                return div(
+                    {
+                        key: String(msg.id),
+                        class: `${bb_.toast} ${bb_.toast}--${msg.type}`,
+                        'data-translate': msg.translateKey || undefined
+                    },
+                    i(`${iconMap[msg.type]} ${bb_.icon}`),
+                    span(bb_.msg, displayMessage)
+                ) as VNode;
             }
 
         // └────────────────────────────────────────────────────────────────────┘

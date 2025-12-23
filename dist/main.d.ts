@@ -2,7 +2,7 @@ import { ApiInterceptors } from '@je-es/capi';
 export { ApiError, ApiInterceptors, ApiOptions, ApiResponse, ApiConfig as CapiConfig, HttpMethod, ParamValue, RequestData, api, configureApi, getApiConfig, http, resetApiConfig } from '@je-es/capi';
 import * as _je_es_vdom from '@je-es/vdom';
 import { VNode } from '@je-es/vdom';
-export { VNode, VNodeChild, VNodeProps, createDOMElement, createElement, html, patch } from '@je-es/vdom';
+export { VNode, VNodeChild, VNodeChildren, VNodeProps, a, button, createDOMElement, createElement, div, form, h1, h2, h3, h4, h5, h6, html, i, img, input, isVNode, label, option, p, patch, select, span, textarea, validateVNode } from '@je-es/vdom';
 
 declare abstract class Component<P = Record<string, unknown>, S = Record<string, unknown>> {
     props: P;
@@ -179,6 +179,13 @@ interface FormFieldOption {
     label: string;
     value: string | number;
 }
+interface FieldButtonConfig {
+    type: 'rules' | 'togglePassword' | 'custom';
+    icon?: string;
+    label?: string;
+    tooltip?: string;
+    onClick?: () => void | Promise<void>;
+}
 interface FormFieldConfig {
     name: string;
     label?: string;
@@ -190,6 +197,8 @@ interface FormFieldConfig {
     validation?: ValidationRule;
     disabled?: boolean;
     className?: string;
+    fieldButtons?: (FieldButtonConfig | 'rules' | 'togglePassword')[];
+    showValidationRules?: boolean;
 }
 type FormSubmitHandler = (data: Record<string, unknown>, event: Event) => void | Promise<void>;
 type ClassValue = string | Record<string, boolean> | undefined | null | false;
@@ -733,6 +742,111 @@ declare class StyleManager {
  */
 declare function css(strings: TemplateStringsArray, ...values: (string | number | boolean | null | undefined)[]): string;
 
+declare const ClassMaker: {
+    /**
+     * Generate Font Awesome icon classes
+     * @param icon Icon name (without 'fa-' prefix)
+     * @param style Font Awesome style (default: 'solid')
+     */
+    fa: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => string;
+    /**
+     * Generate button classes
+     * @param level Button level (primary, secondary, tertiary)
+     * @param className Additional classes
+     */
+    btn: (level: "primary" | "secondary" | "tertiary", className?: string) => string;
+};
+declare const CM: {
+    /**
+     * Generate Font Awesome icon classes
+     * @param icon Icon name (without 'fa-' prefix)
+     * @param style Font Awesome style (default: 'solid')
+     */
+    fa: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => string;
+    /**
+     * Generate button classes
+     * @param level Button level (primary, secondary, tertiary)
+     * @param className Additional classes
+     */
+    btn: (level: "primary" | "secondary" | "tertiary", className?: string) => string;
+};
+declare const ElementCreator: {
+    div: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    span: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h1: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h2: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h3: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h4: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h5: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h6: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    p: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    i: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    img: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    a: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    button: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    input: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    select: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    option: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    textarea: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    form: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    /**
+     * Create icon element with Font Awesome classes
+     * @param icon Icon name (without 'fa-' prefix)
+     * @param style Font Awesome style (default: 'solid')
+     */
+    icon: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => VNode;
+    /**
+     * Create button element
+     */
+    btn: (args: {
+        label: string;
+        onClick?: () => void | Promise<void>;
+        className?: string;
+        icon?: string;
+        iconStyle?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard";
+        level?: "primary" | "secondary" | "tertiary";
+        disabled?: boolean;
+    }) => VNode;
+};
+declare const EC: {
+    div: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    span: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h1: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h2: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h3: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h4: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h5: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    h6: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    p: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    i: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    img: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    a: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    button: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    input: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    select: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    option: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    textarea: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    form: (props?: _je_es_vdom.VNodeProps | string | null | undefined, ...children: _je_es_vdom.VNodeChildren[]) => VNode;
+    /**
+     * Create icon element with Font Awesome classes
+     * @param icon Icon name (without 'fa-' prefix)
+     * @param style Font Awesome style (default: 'solid')
+     */
+    icon: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => VNode;
+    /**
+     * Create button element
+     */
+    btn: (args: {
+        label: string;
+        onClick?: () => void | Promise<void>;
+        className?: string;
+        icon?: string;
+        iconStyle?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard";
+        level?: "primary" | "secondary" | "tertiary";
+        disabled?: boolean;
+    }) => VNode;
+};
+
 declare class I18nManager {
     private translations;
     private currentLanguage;
@@ -744,9 +858,16 @@ declare class I18nManager {
     /**
      * Load translations for a specific language
      * @param lang Language code (e.g., 'en', 'ar', 'fr')
-     * @param translations Translation object
+     * @param translations Translation object (can be nested)
      */
-    loadLanguage(lang: LanguageCode, translations: Record<string, string>): void;
+    loadLanguage(lang: LanguageCode, translations: Record<string, any>): void;
+    /**
+     * Flatten nested object into dot notation
+     * @param obj Nested object
+     * @param prefix Current prefix
+     * @returns Flattened object with dot notation keys
+     */
+    private flattenObject;
     /**
      * Load all translations from static files
      * @param translations Object with language codes as keys and translation objects as values
@@ -771,19 +892,19 @@ declare class I18nManager {
      *
      * @example
      * // Simple translation
-     * t('hello') // => "Hello" or "مرحبا" depending on current language
+     * t('button.login') // => "Login" or "دخـول" depending on current language
      *
      * @example
      * // With parameters
-     * t('welcome', { app_name: 'MyApp' })
-     * // => "Welcome to MyApp"
+     * t('nav.credits', { count: '100' })
+     * // => "Available Credits: 100"
      *
      * @example
      * // With nested translation keys as parameters
-     * t('greeting', { salutation: 'hello' })
-     * // => "Say Hello to everyone"
+     * t('language.switching_to', { language: 'button.login' })
+     * // => "Switching to Login..."
      *
-     * @param key Translation key
+     * @param key Translation key (supports dot notation for nested keys)
      * @param params Optional parameters for replacement
      * @param defaultValue Optional default translation key
      * @returns Translated string with replaced parameters
@@ -806,7 +927,7 @@ declare class I18nManager {
      *
      * @example
      * // Translation: "Hello <br> World"
-     * tHtml('greeting') // => [text node, br element, text node]
+     * tHtml('page.home.title') // => [text node, br element, text node]
      *
      * @param key Translation key
      * @param params Optional parameters for replacement
@@ -880,7 +1001,7 @@ declare function getI18n(): I18nManager;
 
 /**
  * Global translation function
- * @param key Translation key
+ * @param key Translation key (supports dot notation for nested keys)
  * @param params Optional parameters
  * @param defaultValue Optional default translation key
  * @returns Translated string
@@ -923,14 +1044,14 @@ declare function getCurrentLanguage(): string;
 /**
  * Load translations for a specific language
  * @param lang Language code
- * @param translations Translation object
+ * @param translations Translation object (can be nested)
  */
-declare function loadLanguage(lang: string, translations: Record<string, string>): void;
+declare function loadLanguage(lang: string, translations: Record<string, any>): void;
 /**
  * Load all translations
- * @param translations The translations object
+ * @param translations The translations object (can be nested)
  */
-declare function loadTranslations(translations: Record<string, Record<string, string>>): void;
+declare function loadTranslations(translations: Record<string, Record<string, any>>): void;
 /**
  * Get all supported languages
  */
@@ -994,7 +1115,7 @@ declare function initializeI18n(config?: I18nConfig): void;
  *     supportedLanguages: ['en', 'ar'],
  *     staticPath: 'static/i18n'
  * });
- * console.log(t('hello')); // Ready to use in current language!
+ * console.log(t('button.login')); // Ready to use in current language!
  */
 declare function setupI18n(config: I18nConfig): Promise<void>;
 /**
@@ -1033,8 +1154,8 @@ declare class Toast extends Component {
     error(message: string, duration?: number, translateKey?: string): void;
     info(message: string, duration?: number, translateKey?: string): void;
     warning(message: string, duration?: number, translateKey?: string): void;
-    render(): _je_es_vdom.VNode;
-    renderToast(msg: ToastMessage): _je_es_vdom.VNode;
+    render(): VNode;
+    renderToast(msg: ToastMessage): VNode;
 }
 declare function initToast(container?: HTMLElement): Toast;
 declare function getToast(): Toast;
@@ -1066,10 +1187,10 @@ declare class Loader extends Component {
     private hideTimeout;
     onMount(): Promise<void>;
     onUnmount(): void;
-    render(): _je_es_vdom.VNode;
-    renderSpinner(): _je_es_vdom.VNode;
-    renderMessage(): _je_es_vdom.VNode;
-    renderProgressBar(): _je_es_vdom.VNode;
+    render(): VNode;
+    renderSpinner(): VNode;
+    renderMessage(): VNode;
+    renderProgressBar(): VNode;
     show(options?: LoaderOptions | string): void;
     hide(delay?: number): void;
     setMessage(message: string): void;
@@ -1089,19 +1210,22 @@ declare class Loader extends Component {
     };
 }
 
+interface ButtonConfig {
+    label: string;
+    className?: string;
+    icon?: string;
+    loadingLabel?: string;
+    onClick?: 'submit' | (() => void | Promise<void>);
+}
 interface FormConfig {
-    fields: FormFieldConfig[];
+    fields: (FormFieldConfig | (FormFieldConfig | VNode)[])[];
     endpoint?: string;
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
     onSuccess?: (data: unknown) => void;
     onError?: (error: unknown) => void;
     onValidationError?: (errors: Record<string, string>) => void;
-    submitButton?: {
-        label?: string;
-        loadingLabel?: string;
-        className?: string;
-    };
+    buttons?: Record<string, ButtonConfig>;
     className?: string;
     autoValidate?: boolean;
 }
@@ -1119,6 +1243,7 @@ declare class SmartFormComponent extends Component<FormConfig> {
     isSubmitting: boolean;
     submitError: string;
     submitSuccess: boolean;
+    passwordVisibility: Record<string, boolean>;
     constructor(props: FormConfig);
     onMount(): void;
     /**
@@ -1146,9 +1271,29 @@ declare class SmartFormComponent extends Component<FormConfig> {
      */
     renderLabel(field: FormField): VNode | string;
     /**
+     * Get field buttons configuration
+     */
+    getFieldButtons(field: FormField): FieldButtonConfig[];
+    /**
+     * Handle field button click
+     */
+    handleFieldButton(field: FormField, buttonType: string): void;
+    /**
+     * Render validation rules popup
+     */
+    renderValidationRules(field: FormField): VNode | string;
+    /**
+     * Render field input buttons
+     */
+    renderFieldButtons(field: FormField): VNode | string;
+    /**
      * Render form field
      */
     renderField(field: FormField): VNode;
+    /**
+     * Render buttons section
+     */
+    renderButtons(): VNode;
     render(): VNode;
     styles(): string;
 }
@@ -1375,7 +1520,7 @@ declare class TabbedView extends Component {
     renderTabList(): VNode;
     renderTab(tab: Tab): VNode;
     renderTabContent(): VNode;
-    renderActiveTabContent(tab: Tab): any;
+    renderActiveTabContent(tab: Tab): VNode;
 }
 /**
  * Create a new TabbedView instance with options
@@ -1520,6 +1665,7 @@ declare class Dropdown extends Component {
     config: DropdownConfig;
     isOpen: boolean;
     private mounted;
+    private bb_;
     constructor(config: DropdownConfig);
     onMount(): void;
     onUnmount(): void;
@@ -1732,4 +1878,111 @@ declare function formatTimeAgo(timestamp: string | Date): string;
  */
 declare function getTimeTitle(timestamp: string | Date): string;
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, type EventHandler, type FormConfig, type FormField, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tHtml, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+declare const bbMap: {
+    form: {
+        base: string;
+        field: string;
+        fieldCheckbox: string;
+        fieldInput: string;
+        fieldInputContainer: string;
+        fieldInputButtons: string;
+        fieldInputButton: string;
+        fieldInputButtonRules: string;
+        fieldInputButtonRulesContent: string;
+        fieldTextarea: string;
+        fieldSelect: string;
+        fieldLabel: string;
+        fieldError: string;
+        fieldTitle: string;
+        buttonsContainer: string;
+        button: string;
+        alert: string;
+        alertError: string;
+        alertSuccess: string;
+    };
+    toast: {
+        container: string;
+        toast: string;
+        icon: string;
+        msg: string;
+    };
+    loader: {
+        container: string;
+        containerOverlay: string;
+        bg: string;
+        loader: string;
+        spinner: {
+            container: string;
+            icon: string;
+            dot: string;
+            pulse: string;
+            text: string;
+        };
+        progress: {
+            container: string;
+            bar: string;
+            text: string;
+        };
+    };
+    popup: {
+        container: string;
+        overlay: string;
+        popup: {
+            base: string;
+            close: string;
+        };
+        header: {
+            container: string;
+            icon: string;
+            content: string;
+            title: string;
+            description: string;
+        };
+        body: {
+            container: string;
+            message: string;
+            input: string;
+            formContainer: string;
+        };
+        footer: string;
+        button: string;
+    };
+    dropdown: {
+        container: string;
+        trigger: string;
+        menu: string;
+        item: string;
+        divider: string;
+        icon: string;
+    };
+    itemsLoader: {
+        container: string;
+        list: string;
+        searchbar: string;
+        loading: string;
+        error: string;
+        trigger: string;
+        end: string;
+        emptyState: string;
+        button: string;
+        item: string;
+        formFieldInput: string;
+    };
+    tabbedView: {
+        container: string;
+        header: string;
+        tab: {
+            base: string;
+            active: string;
+            disabled: string;
+            badge: string;
+        };
+        content: {
+            container: string;
+            emptyState: string;
+            error: string;
+        };
+    };
+};
+
+export { type ApiConfig, type AppConfig, type BuildConfig, type ButtonConfig, CM, ClassMaker, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, EC, ElementCreator, type EventHandler, type FieldButtonConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, bbMap, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tHtml, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
