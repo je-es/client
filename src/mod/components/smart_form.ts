@@ -8,12 +8,12 @@
 
     import { Component } from '../core/component';
     import { div, label, input, select, option, span, textarea, button, form } from '@je-es/vdom';
-    import type { FormFieldOption, VNode, FieldButtonConfig } from '../../types';
+    import type { FormFieldOption, VNode, FieldButtonConfig, LabelConfig } from '../../types';
     import { css } from '../core/styles';
     import { state } from '../core/decorators';
     import { api } from '@je-es/capi';
     import type { FormFieldConfig, ValidationRule } from '../../types';
-    import { t } from '../services/i18n';
+    import { t } from '../core/i18n';
     import { bbMap, CM } from '../../main';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
@@ -74,9 +74,10 @@
     export type { FormFieldConfig, ValidationRule };
 
     export interface ButtonConfig {
-        label: string;
+        label?: string;
         className?: string;
         icon?: string;
+        title?: string;
         loadingLabel?: string;
         onClick?: 'submit' | (() => void | Promise<void>);
     }
@@ -120,7 +121,7 @@
         @state submitError = '';
         // @ts-expect-error - TypeScript decorator limitation with class property types
         @state submitSuccess = false;
-        
+
         // Simple object for tracking password visibility (no state needed)
         passwordVisibility: Record<string, boolean> = {};
 
@@ -338,17 +339,37 @@
          * Render label with optional icon
          */
         renderLabel(field: FormField): VNode | string {
-            if (!field.label && !field.icon) return '';
+            // Handle new label object format
+            if (typeof field.label === 'object' && field.label !== null) {
+                const labelConfig = field.label as LabelConfig;
+                const labelText = labelConfig.text;
+                const labelIcon = labelConfig.icon;
+                const labelTitle = labelConfig.title;
 
-            if (field.icon) {
-                return label(
-                    { for: field.name },
-                    span(CM.fa(field.icon)),
-                    field.label ? span(bbMap.form.fieldTitle, field.label) : ''
-                ) as VNode;
+                if (!labelText && !labelIcon) return '';
+
+                const labelAttrs: Record<string, string> = { for: field.name };
+                if (labelTitle) {
+                    labelAttrs.title = labelTitle;
+                }
+
+                if (labelIcon) {
+                    return label(
+                        labelAttrs,
+                        span(CM.fa(labelIcon)),
+                        labelText ? span(bbMap.form.fieldTitle, labelText) : ''
+                    ) as VNode;
+                }
+
+                return label(labelAttrs, labelText || '') as VNode;
             }
 
-            return label({ for: field.name }, field.label) as VNode;
+            // Handle old string format (backward compatibility)
+            if (!field.label) return '';
+
+            const labelAttrs: Record<string, string> = { for: field.name };
+
+            return label(labelAttrs, String(field.label)) as VNode;
         }
 
         /**
@@ -366,7 +387,7 @@
                 buttons.push({
                     type: 'togglePassword',
                     icon: 'eye',
-                    tooltip: t('form.showPassword', {}, 'Show Password'),
+                    title: t('form.showPassword', {}, 'Show Password'),
                 });
             }
 
@@ -398,13 +419,13 @@
                 // Toggle visibility state
                 this.passwordVisibility[field.name] = !this.passwordVisibility[field.name];
                 const isVisible = this.passwordVisibility[field.name];
-                
+
                 // Directly manipulate the input element's type
                 const inputElement = document.querySelector(`input[name="${field.name}"]`) as HTMLInputElement;
                 if (inputElement) {
                     inputElement.type = isVisible ? 'text' : 'password';
                 }
-                
+
                 // Update the button icon
                 const buttonContainer = inputElement?.closest(`.${FORM_STYLES.fieldInputContainer}`)
                     ?.querySelector(`.${FORM_STYLES.fieldInputButtons}`);
@@ -417,7 +438,7 @@
                         iconSpan.className = iconSpan.className.replace(/fa-eye(-slash)?/, isVisible ? 'fa-eye-slash' : 'fa-eye');
                     }
                     // Update title
-                    toggleBtn.title = isVisible 
+                    toggleBtn.title = isVisible
                         ? t('form.hidePassword', {}, 'Hide Password')
                         : t('form.showPassword', {}, 'Show Password');
                 }
@@ -479,7 +500,7 @@
                     // Rules button with hover popup
                     buttonElements.push(
                         div(
-                            { class: FORM_STYLES.fieldInputButtonRules, title: btn.tooltip },
+                            { class: FORM_STYLES.fieldInputButtonRules, title: btn.title },
                             button(
                                 {
                                     type: 'button',
@@ -502,7 +523,7 @@
                             {
                                 type: 'button',
                                 class: FORM_STYLES.fieldInputButton,
-                                title: btn.tooltip,
+                                title: btn.title,
                                 tabindex: -1,
                                 onclick: (e: Event) => {
                                     e.preventDefault();
@@ -597,6 +618,18 @@
                 case 'checkbox': {
                     const isChecked = Boolean(value);
                     const checkboxClass = [FORM_STYLES.field, FORM_STYLES.fieldCheckbox, field.className].filter(Boolean).join(' ');
+                    
+                    // Extract icon and text from label
+                    let labelIcon = '';
+                    let labelText = '';
+                    
+                    if (typeof field.label === 'object' && field.label !== null) {
+                        labelIcon = (field.label as LabelConfig).icon || '';
+                        labelText = (field.label as LabelConfig).text || '';
+                    } else if (typeof field.label === 'string') {
+                        labelText = field.label;
+                    }
+                    
                     return div(
                         { class: checkboxClass },
                         input(
@@ -615,8 +648,8 @@
                         ),
                         label(
                             { for: field.name },
-                            field.icon ? span(CM.fa(field.icon)) : '',
-                            field.label || ''
+                            labelIcon ? span(CM.fa(labelIcon)) : '',
+                            labelText || ''
                         ),
                         errorMsg
                     ) as VNode;
@@ -680,6 +713,7 @@
                         type: isSubmitButton ? 'submit' : 'button',
                         class: [FORM_STYLES.button, buttonConfig.className].filter(Boolean).join(' '),
                         disabled: isDisabled,
+                        title: buttonConfig.title,
                         onclick: !isSubmitButton ? async (e: Event) => {
                             e.preventDefault();
                             if (typeof buttonConfig.onClick === 'function') {

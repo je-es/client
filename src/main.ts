@@ -31,10 +31,11 @@
     export * from './mod/core/styles';
 
     // Helpers
-    export { ClassMaker, CM, ElementCreator, EC } from './mod/helpers';
+    export { ClassMaker, CM, ElementCreator, EC, Window } from './mod/helpers';
 
     // Services
-    export * from './mod/services/i18n';
+    export * from './mod/core/i18n';
+    export * from './mod/services/fa_config';
 
     // Components
     export * from './mod/components/toast';

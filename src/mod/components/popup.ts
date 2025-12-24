@@ -9,7 +9,7 @@
     import { type VNode, div, button, h2, p, i, input }     from "@je-es/vdom";
     import { Component }                from "../core/component";
     import { state }                    from "../core/decorators";
-    import { t, tHtml }                 from "../services/i18n";
+    import { t, tHtml }                 from "../core/i18n";
     import { FormConfig, SmartForm }    from "./smart_form";
     import { ClassMaker }               from "../helpers";
     import styleMap from "./bb_map.json";

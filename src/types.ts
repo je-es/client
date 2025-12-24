@@ -92,6 +92,10 @@
         staticPath?: string;
     }
 
+    export interface FAConfig {
+        theme?: 'solid' | 'regular' | 'light' | 'thin' | 'duotone' | 'brands' | 'sharp-solid' | 'sharp-regular' | 'sharp-light' | 'sharp-thin' | 'sharp-duotone-solid' | 'sharp-duotone-regular' | 'sharp-duotone-light' | 'sharp-duotone-thin' | 'notdog' | 'notdog-duo' | 'jelly' | 'jelly-fill' | 'jelly-duo' | 'chisel' | 'etch' | 'slab' | 'slab-press' | 'thumbprint' | 'utility' | 'utility-fill' | 'utility-duo' | 'whiteboard';
+    }
+
     export interface ClientConfig {
         build?: BuildConfig;
         app?: AppConfig;
@@ -100,6 +104,7 @@
         router?: RouterConfig;
         api?: ApiConfig;
         devTools?: DevToolsConfig;
+        fa?: FAConfig;
     }
 
     export interface Route {
@@ -160,14 +165,19 @@
         type: 'rules' | 'togglePassword' | 'custom';
         icon?: string;
         label?: string;
-        tooltip?: string;
+        title?: string;
         onClick?: () => void | Promise<void>;
+    }
+
+    export interface LabelConfig {
+        text?: string;
+        icon?: string;
+        title?: string;
     }
 
     export interface FormFieldConfig {
         name: string;
-        label?: string;
-        icon?: string;
+        label?: string | LabelConfig;
         type?: string;
         placeholder?: string;
         value?: unknown;

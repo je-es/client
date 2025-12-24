@@ -8,7 +8,7 @@
 
     import { createDOMElement, div, input, p, button, span, i, type VNode, type VNodeChild } from "@je-es/vdom";
     import { Component }    from "../core/component";
-    import { t }            from "../services/i18n";
+    import { t }            from "../core/i18n";
     import { ClassMaker }   from "../helpers";
     import styleMap from "./bb_map.json";
 

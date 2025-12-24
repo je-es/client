@@ -125,6 +125,9 @@ interface I18nConfig {
     supportedLanguages?: LanguageCode[];
     staticPath?: string;
 }
+interface FAConfig {
+    theme?: 'solid' | 'regular' | 'light' | 'thin' | 'duotone' | 'brands' | 'sharp-solid' | 'sharp-regular' | 'sharp-light' | 'sharp-thin' | 'sharp-duotone-solid' | 'sharp-duotone-regular' | 'sharp-duotone-light' | 'sharp-duotone-thin' | 'notdog' | 'notdog-duo' | 'jelly' | 'jelly-fill' | 'jelly-duo' | 'chisel' | 'etch' | 'slab' | 'slab-press' | 'thumbprint' | 'utility' | 'utility-fill' | 'utility-duo' | 'whiteboard';
+}
 interface ClientConfig {
     build?: BuildConfig;
     app?: AppConfig;
@@ -133,6 +136,7 @@ interface ClientConfig {
     router?: RouterConfig;
     api?: ApiConfig;
     devTools?: DevToolsConfig;
+    fa?: FAConfig;
 }
 interface Route {
     path: string;
@@ -183,13 +187,17 @@ interface FieldButtonConfig {
     type: 'rules' | 'togglePassword' | 'custom';
     icon?: string;
     label?: string;
-    tooltip?: string;
+    title?: string;
     onClick?: () => void | Promise<void>;
+}
+interface LabelConfig {
+    text?: string;
+    icon?: string;
+    title?: string;
 }
 interface FormFieldConfig {
     name: string;
-    label?: string;
-    icon?: string;
+    label?: string | LabelConfig;
     type?: string;
     placeholder?: string;
     value?: unknown;
@@ -742,11 +750,330 @@ declare class StyleManager {
  */
 declare function css(strings: TemplateStringsArray, ...values: (string | number | boolean | null | undefined)[]): string;
 
+interface ButtonConfig {
+    label?: string;
+    className?: string;
+    icon?: string;
+    title?: string;
+    loadingLabel?: string;
+    onClick?: 'submit' | (() => void | Promise<void>);
+}
+interface FormConfig {
+    fields: (FormFieldConfig | (FormFieldConfig | VNode)[])[];
+    endpoint?: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
+    onSuccess?: (data: unknown) => void;
+    onError?: (error: unknown) => void;
+    onValidationError?: (errors: Record<string, string>) => void;
+    buttons?: Record<string, ButtonConfig>;
+    className?: string;
+    autoValidate?: boolean;
+}
+interface FormField extends FormFieldConfig {
+    error?: string;
+    touched?: boolean;
+}
+/**
+ * SmartForm Component
+ * Auto-validation, CSRF protection, API submission
+ */
+declare class SmartFormComponent extends Component<FormConfig> {
+    fields: FormField[];
+    formData: Record<string, unknown>;
+    isSubmitting: boolean;
+    submitError: string;
+    submitSuccess: boolean;
+    passwordVisibility: Record<string, boolean>;
+    constructor(props: FormConfig);
+    onMount(): void;
+    /**
+     * Handle field change
+     */
+    handleChange(fieldName: string, value: unknown): void;
+    /**
+     * Handle field blur
+     */
+    handleBlur(fieldName: string): void;
+    /**
+     * Validate single field
+     */
+    validateField(field: FormField, value: unknown): string | undefined;
+    /**
+     * Validate all fields
+     */
+    validateForm(): boolean;
+    /**
+     * Handle form submission
+     */
+    handleSubmit(event: Event): Promise<void>;
+    /**
+     * Render label with optional icon
+     */
+    renderLabel(field: FormField): VNode | string;
+    /**
+     * Get field buttons configuration
+     */
+    getFieldButtons(field: FormField): FieldButtonConfig[];
+    /**
+     * Handle field button click
+     */
+    handleFieldButton(field: FormField, buttonType: string): void;
+    /**
+     * Render validation rules popup
+     */
+    renderValidationRules(field: FormField): VNode | string;
+    /**
+     * Render field input buttons
+     */
+    renderFieldButtons(field: FormField): VNode | string;
+    /**
+     * Render form field
+     */
+    renderField(field: FormField): VNode;
+    /**
+     * Render buttons section
+     */
+    renderButtons(): VNode;
+    render(): VNode;
+    styles(): string;
+}
+/**
+ * SmartForm helper function
+ */
+declare function SmartForm(config: FormConfig): VNode;
+
+type PopupType = 'confirm' | 'alert' | 'form' | 'custom' | 'prompt';
+type PopupVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
+type PopupSize = 'small' | 'medium' | 'large' | 'xlarge' | 'fullscreen';
+interface PopupButton {
+    label: string;
+    translateKey?: string;
+    variant?: 'primary' | 'secondary' | 'danger' | 'success';
+    icon?: string;
+    onClick: () => void | Promise<void>;
+    loading?: boolean;
+}
+interface PopupFormOptions {
+    title: string;
+    titleTranslateKey?: string;
+    description?: string;
+    descriptionTranslateKey?: string;
+    formConfig: FormConfig;
+    variant?: PopupVariant;
+    icon?: string;
+    size?: PopupSize;
+    closeOnOverlay?: boolean;
+    closeOnEscape?: boolean;
+    showCloseButton?: boolean;
+}
+interface PopupOptions {
+    title: string;
+    titleTranslateKey?: string;
+    message?: string;
+    messageTranslateKey?: string;
+    description?: string;
+    descriptionTranslateKey?: string;
+    type?: PopupType;
+    variant?: PopupVariant;
+    size?: PopupSize;
+    buttons?: PopupButton[];
+    customContent?: VNode;
+    formConfig?: FormConfig;
+    closeOnOverlay?: boolean;
+    closeOnEscape?: boolean;
+    showCloseButton?: boolean;
+    icon?: string;
+    onConfirm?: () => void | Promise<void>;
+    onCancel?: () => void | Promise<void>;
+}
+interface ActivePopup extends PopupOptions {
+    id: number;
+    resolve?: (value: boolean | string | null | Record<string, unknown>) => void;
+    inputValue?: string;
+    isSubmitting?: boolean;
+}
+declare class Popup extends Component {
+    popups: ActivePopup[];
+    private nextId;
+    private handleEscapeKey?;
+    onMount(): Promise<void>;
+    onUnmount(): void;
+    render(): VNode;
+    renderPopup(popup: ActivePopup): VNode;
+    /**
+     * Show a custom popup
+     */
+    show(options: PopupOptions): Promise<boolean | string | null | Record<string, unknown>>;
+    /**
+     * Show a form popup
+     */
+    showForm(options: PopupFormOptions): Promise<boolean | string | null | Record<string, unknown>>;
+    /**
+     * Show a confirmation dialog
+     */
+    confirm(options: {
+        title: string;
+        titleTranslateKey?: string;
+        message: string;
+        messageTranslateKey?: string;
+        confirmLabel?: string;
+        confirmTranslateKey?: string;
+        cancelLabel?: string;
+        cancelTranslateKey?: string;
+        variant?: PopupVariant;
+        icon?: string;
+        size?: PopupSize;
+        onConfirm?: () => void | Promise<void>;
+        onCancel?: () => void | Promise<void>;
+    }): Promise<boolean>;
+    /**
+     * Show an alert dialog
+     */
+    alert(options: {
+        title: string;
+        titleTranslateKey?: string;
+        message: string;
+        messageTranslateKey?: string;
+        okLabel?: string;
+        okTranslateKey?: string;
+        variant?: PopupVariant;
+        icon?: string;
+        size?: PopupSize;
+        onConfirm?: () => void | Promise<void>;
+    }): Promise<boolean>;
+    /**
+     * Show a prompt dialog
+     */
+    prompt(options: {
+        title: string;
+        titleTranslateKey?: string;
+        message: string;
+        messageTranslateKey?: string;
+        defaultValue?: string;
+        confirmLabel?: string;
+        confirmTranslateKey?: string;
+        cancelLabel?: string;
+        cancelTranslateKey?: string;
+        icon?: string;
+        onConfirm?: (value: string) => void | Promise<void>;
+        onCancel?: () => void | Promise<void>;
+    }): Promise<string | null>;
+    /**
+     * Close a specific popup
+     */
+    closePopup(id: number, result: boolean | string | null | Record<string, unknown>): void;
+    /**
+     * Close all popups
+     */
+    closeAll(): void;
+    private applyBodyLock;
+    private removeBodyLock;
+    private setupKeyboardListener;
+}
+declare function initPopup(container?: HTMLElement): Popup;
+declare function getPopup$1(): Popup;
+declare const popup: {
+    show: (options: PopupOptions) => Promise<string | boolean | Record<string, unknown> | null>;
+    confirm: (options: Parameters<Popup["confirm"]>[0]) => Promise<boolean>;
+    alert: (options: Parameters<Popup["alert"]>[0]) => Promise<boolean>;
+    prompt: (options: {
+        title: string;
+        titleTranslateKey?: string;
+        message: string;
+        icon?: string;
+        messageTranslateKey?: string;
+        onConfirm?: () => void | Promise<void>;
+    }) => Promise<string | null>;
+    showForm: (options: PopupFormOptions) => Promise<string | boolean | Record<string, unknown> | null>;
+    closePopup: (id: number, result: boolean | string | null | Record<string, unknown>) => void;
+    closeLastPopup: () => void;
+    closeFirstPopup: () => void;
+    closeAll: () => void;
+};
+
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+interface ToastMessage {
+    id: number;
+    message: string;
+    type: ToastType;
+    translateKey?: string;
+}
+declare class Toast extends Component {
+    messages: ToastMessage[];
+    private nextId;
+    /**
+     * Show a toast notification
+     */
+    show(message: string, type?: ToastType, duration?: number, translateKey?: string): void;
+    /**
+     * Convenience methods
+     */
+    success(message: string, duration?: number, translateKey?: string): void;
+    error(message: string, duration?: number, translateKey?: string): void;
+    info(message: string, duration?: number, translateKey?: string): void;
+    warning(message: string, duration?: number, translateKey?: string): void;
+    render(): VNode;
+    renderToast(msg: ToastMessage): VNode;
+}
+declare function initToast(container?: HTMLElement): Toast;
+declare function getToast$1(): Toast;
+declare const toast: {
+    show: (message: string, type?: ToastType, duration?: number, translateKey?: string) => void;
+    success: (message: string, duration?: number, translateKey?: string) => void;
+    error: (message: string, duration?: number, translateKey?: string) => void;
+    info: (message: string, duration?: number, translateKey?: string) => void;
+    warning: (message: string, duration?: number, translateKey?: string) => void;
+};
+
+type LoaderSize = 'small' | 'medium' | 'large';
+type LoaderVariant = 'spinner' | 'dots' | 'pulse';
+interface LoaderOptions {
+    message?: string;
+    variant?: LoaderVariant;
+    size?: LoaderSize;
+    overlay?: boolean;
+}
+declare class Loader extends Component {
+    visible: boolean;
+    message: string;
+    variant: LoaderVariant;
+    size: LoaderSize;
+    overlay: boolean;
+    progress: number;
+    showProgress: boolean;
+    private animationFrame;
+    private hideTimeout;
+    onMount(): Promise<void>;
+    onUnmount(): void;
+    render(): VNode;
+    renderSpinner(): VNode;
+    renderMessage(): VNode;
+    renderProgressBar(): VNode;
+    show(options?: LoaderOptions | string): void;
+    hide(delay?: number): void;
+    setMessage(message: string): void;
+    setProgress(progress: number): void;
+    updateProgress(increment: number): void;
+    private performHide;
+    private applyBodyLock;
+    private removeBodyLock;
+    private setupKeyboardListener;
+    private handleKeyPress;
+    private initializeAccessibility;
+    isVisible(): boolean;
+    getStatus(): {
+        visible: boolean;
+        message: string;
+        progress: number;
+    };
+}
+
 declare const ClassMaker: {
     /**
      * Generate Font Awesome icon classes
      * @param icon Icon name (without 'fa-' prefix)
-     * @param style Font Awesome style (default: 'solid')
+     * @param style Font Awesome style (default: global default theme or 'solid')
      */
     fa: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => string;
     /**
@@ -760,7 +1087,7 @@ declare const CM: {
     /**
      * Generate Font Awesome icon classes
      * @param icon Icon name (without 'fa-' prefix)
-     * @param style Font Awesome style (default: 'solid')
+     * @param style Font Awesome style (default: global default theme or 'solid')
      */
     fa: (icon: string, style?: "solid" | "regular" | "light" | "thin" | "duotone" | "brands" | "sharp-solid" | "sharp-regular" | "sharp-light" | "sharp-thin" | "sharp-duotone-solid" | "sharp-duotone-regular" | "sharp-duotone-light" | "sharp-duotone-thin" | "notdog" | "notdog-duo" | "jelly" | "jelly-fill" | "jelly-duo" | "chisel" | "etch" | "slab" | "slab-press" | "thumbprint" | "utility" | "utility-fill" | "utility-duo" | "whiteboard") => string;
     /**
@@ -845,6 +1172,40 @@ declare const EC: {
         level?: "primary" | "secondary" | "tertiary";
         disabled?: boolean;
     }) => VNode;
+};
+declare class EventsManager {
+    private _handlers;
+    constructor();
+    add(event: string, listener: EventListener): void;
+    remove(event: string, listener: EventListener): void;
+    removeAll(event?: string): void;
+    get(event: string): Set<EventListener> | undefined;
+    has(event: string): boolean;
+    count(event?: string): number;
+}
+declare function getToast(): Toast;
+declare function getPopup(): Popup;
+declare function getLoader(): Loader;
+declare function hideLoader(): void;
+declare function showLoader(message?: string): void;
+declare const Window$1: {
+    Events: EventsManager;
+    toast: typeof getToast;
+    popup: typeof getPopup;
+    loader: typeof getLoader;
+    showLoader: typeof showLoader;
+    hideLoader: typeof hideLoader;
+    reload: () => void;
+    getPathName: () => string;
+    setAttributes: (key: string, value: string) => void;
+    getAttributes: (key: string) => string | null;
+    setLocalStorage: (key: string, value: string) => void;
+    getLocalStorage: (key: string) => string | null;
+    addEventListener: (event: string, listener: EventListener) => void;
+    removeEventListener: (event: string, listener: EventListener) => void;
+    dispatchEvent: (event: CustomEvent) => void;
+    onScroll: (callback: () => void) => void;
+    getScrollY: () => number;
 };
 
 declare class I18nManager {
@@ -1133,323 +1494,21 @@ declare function setupI18n(config: I18nConfig): Promise<void>;
  */
 declare function loadLanguageFile(lang: string, staticPath?: string): Promise<void>;
 
-type ToastType = 'success' | 'error' | 'info' | 'warning';
-interface ToastMessage {
-    id: number;
-    message: string;
-    type: ToastType;
-    translateKey?: string;
-}
-declare class Toast extends Component {
-    messages: ToastMessage[];
-    private nextId;
-    /**
-     * Show a toast notification
-     */
-    show(message: string, type?: ToastType, duration?: number, translateKey?: string): void;
-    /**
-     * Convenience methods
-     */
-    success(message: string, duration?: number, translateKey?: string): void;
-    error(message: string, duration?: number, translateKey?: string): void;
-    info(message: string, duration?: number, translateKey?: string): void;
-    warning(message: string, duration?: number, translateKey?: string): void;
-    render(): VNode;
-    renderToast(msg: ToastMessage): VNode;
-}
-declare function initToast(container?: HTMLElement): Toast;
-declare function getToast(): Toast;
-declare const toast: {
-    show: (message: string, type?: ToastType, duration?: number, translateKey?: string) => void;
-    success: (message: string, duration?: number, translateKey?: string) => void;
-    error: (message: string, duration?: number, translateKey?: string) => void;
-    info: (message: string, duration?: number, translateKey?: string) => void;
-    warning: (message: string, duration?: number, translateKey?: string) => void;
-};
-
-type LoaderSize = 'small' | 'medium' | 'large';
-type LoaderVariant = 'spinner' | 'dots' | 'pulse';
-interface LoaderOptions {
-    message?: string;
-    variant?: LoaderVariant;
-    size?: LoaderSize;
-    overlay?: boolean;
-}
-declare class Loader extends Component {
-    visible: boolean;
-    message: string;
-    variant: LoaderVariant;
-    size: LoaderSize;
-    overlay: boolean;
-    progress: number;
-    showProgress: boolean;
-    private animationFrame;
-    private hideTimeout;
-    onMount(): Promise<void>;
-    onUnmount(): void;
-    render(): VNode;
-    renderSpinner(): VNode;
-    renderMessage(): VNode;
-    renderProgressBar(): VNode;
-    show(options?: LoaderOptions | string): void;
-    hide(delay?: number): void;
-    setMessage(message: string): void;
-    setProgress(progress: number): void;
-    updateProgress(increment: number): void;
-    private performHide;
-    private applyBodyLock;
-    private removeBodyLock;
-    private setupKeyboardListener;
-    private handleKeyPress;
-    private initializeAccessibility;
-    isVisible(): boolean;
-    getStatus(): {
-        visible: boolean;
-        message: string;
-        progress: number;
-    };
-}
-
-interface ButtonConfig {
-    label: string;
-    className?: string;
-    icon?: string;
-    loadingLabel?: string;
-    onClick?: 'submit' | (() => void | Promise<void>);
-}
-interface FormConfig {
-    fields: (FormFieldConfig | (FormFieldConfig | VNode)[])[];
-    endpoint?: string;
-    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-    onSubmit?: (data: Record<string, unknown>, event: Event) => void | Promise<void>;
-    onSuccess?: (data: unknown) => void;
-    onError?: (error: unknown) => void;
-    onValidationError?: (errors: Record<string, string>) => void;
-    buttons?: Record<string, ButtonConfig>;
-    className?: string;
-    autoValidate?: boolean;
-}
-interface FormField extends FormFieldConfig {
-    error?: string;
-    touched?: boolean;
-}
+type FATheme = 'solid' | 'regular' | 'light' | 'thin' | 'duotone' | 'brands' | 'sharp-solid' | 'sharp-regular' | 'sharp-light' | 'sharp-thin' | 'sharp-duotone-solid' | 'sharp-duotone-regular' | 'sharp-duotone-light' | 'sharp-duotone-thin' | 'notdog' | 'notdog-duo' | 'jelly' | 'jelly-fill' | 'jelly-duo' | 'chisel' | 'etch' | 'slab' | 'slab-press' | 'thumbprint' | 'utility' | 'utility-fill' | 'utility-duo' | 'whiteboard';
 /**
- * SmartForm Component
- * Auto-validation, CSRF protection, API submission
+ * Get the default FontAwesome theme
  */
-declare class SmartFormComponent extends Component<FormConfig> {
-    fields: FormField[];
-    formData: Record<string, unknown>;
-    isSubmitting: boolean;
-    submitError: string;
-    submitSuccess: boolean;
-    passwordVisibility: Record<string, boolean>;
-    constructor(props: FormConfig);
-    onMount(): void;
-    /**
-     * Handle field change
-     */
-    handleChange(fieldName: string, value: unknown): void;
-    /**
-     * Handle field blur
-     */
-    handleBlur(fieldName: string): void;
-    /**
-     * Validate single field
-     */
-    validateField(field: FormField, value: unknown): string | undefined;
-    /**
-     * Validate all fields
-     */
-    validateForm(): boolean;
-    /**
-     * Handle form submission
-     */
-    handleSubmit(event: Event): Promise<void>;
-    /**
-     * Render label with optional icon
-     */
-    renderLabel(field: FormField): VNode | string;
-    /**
-     * Get field buttons configuration
-     */
-    getFieldButtons(field: FormField): FieldButtonConfig[];
-    /**
-     * Handle field button click
-     */
-    handleFieldButton(field: FormField, buttonType: string): void;
-    /**
-     * Render validation rules popup
-     */
-    renderValidationRules(field: FormField): VNode | string;
-    /**
-     * Render field input buttons
-     */
-    renderFieldButtons(field: FormField): VNode | string;
-    /**
-     * Render form field
-     */
-    renderField(field: FormField): VNode;
-    /**
-     * Render buttons section
-     */
-    renderButtons(): VNode;
-    render(): VNode;
-    styles(): string;
-}
+declare function getDefaultFATheme(): FATheme;
 /**
- * SmartForm helper function
+ * Set the default FontAwesome theme
+ * @param theme The FontAwesome theme to use as default
  */
-declare function SmartForm(config: FormConfig): VNode;
-
-type PopupType = 'confirm' | 'alert' | 'form' | 'custom' | 'prompt';
-type PopupVariant = 'default' | 'danger' | 'warning' | 'success' | 'info';
-type PopupSize = 'small' | 'medium' | 'large' | 'xlarge' | 'fullscreen';
-interface PopupButton {
-    label: string;
-    translateKey?: string;
-    variant?: 'primary' | 'secondary' | 'danger' | 'success';
-    icon?: string;
-    onClick: () => void | Promise<void>;
-    loading?: boolean;
-}
-interface PopupFormOptions {
-    title: string;
-    titleTranslateKey?: string;
-    description?: string;
-    descriptionTranslateKey?: string;
-    formConfig: FormConfig;
-    variant?: PopupVariant;
-    icon?: string;
-    size?: PopupSize;
-    closeOnOverlay?: boolean;
-    closeOnEscape?: boolean;
-    showCloseButton?: boolean;
-}
-interface PopupOptions {
-    title: string;
-    titleTranslateKey?: string;
-    message?: string;
-    messageTranslateKey?: string;
-    description?: string;
-    descriptionTranslateKey?: string;
-    type?: PopupType;
-    variant?: PopupVariant;
-    size?: PopupSize;
-    buttons?: PopupButton[];
-    customContent?: VNode;
-    formConfig?: FormConfig;
-    closeOnOverlay?: boolean;
-    closeOnEscape?: boolean;
-    showCloseButton?: boolean;
-    icon?: string;
-    onConfirm?: () => void | Promise<void>;
-    onCancel?: () => void | Promise<void>;
-}
-interface ActivePopup extends PopupOptions {
-    id: number;
-    resolve?: (value: boolean | string | null | Record<string, unknown>) => void;
-    inputValue?: string;
-    isSubmitting?: boolean;
-}
-declare class Popup extends Component {
-    popups: ActivePopup[];
-    private nextId;
-    private handleEscapeKey?;
-    onMount(): Promise<void>;
-    onUnmount(): void;
-    render(): VNode;
-    renderPopup(popup: ActivePopup): VNode;
-    /**
-     * Show a custom popup
-     */
-    show(options: PopupOptions): Promise<boolean | string | null | Record<string, unknown>>;
-    /**
-     * Show a form popup
-     */
-    showForm(options: PopupFormOptions): Promise<boolean | string | null | Record<string, unknown>>;
-    /**
-     * Show a confirmation dialog
-     */
-    confirm(options: {
-        title: string;
-        titleTranslateKey?: string;
-        message: string;
-        messageTranslateKey?: string;
-        confirmLabel?: string;
-        confirmTranslateKey?: string;
-        cancelLabel?: string;
-        cancelTranslateKey?: string;
-        variant?: PopupVariant;
-        icon?: string;
-        size?: PopupSize;
-        onConfirm?: () => void | Promise<void>;
-        onCancel?: () => void | Promise<void>;
-    }): Promise<boolean>;
-    /**
-     * Show an alert dialog
-     */
-    alert(options: {
-        title: string;
-        titleTranslateKey?: string;
-        message: string;
-        messageTranslateKey?: string;
-        okLabel?: string;
-        okTranslateKey?: string;
-        variant?: PopupVariant;
-        icon?: string;
-        size?: PopupSize;
-        onConfirm?: () => void | Promise<void>;
-    }): Promise<boolean>;
-    /**
-     * Show a prompt dialog
-     */
-    prompt(options: {
-        title: string;
-        titleTranslateKey?: string;
-        message: string;
-        messageTranslateKey?: string;
-        defaultValue?: string;
-        confirmLabel?: string;
-        confirmTranslateKey?: string;
-        cancelLabel?: string;
-        cancelTranslateKey?: string;
-        icon?: string;
-        onConfirm?: (value: string) => void | Promise<void>;
-        onCancel?: () => void | Promise<void>;
-    }): Promise<string | null>;
-    /**
-     * Close a specific popup
-     */
-    closePopup(id: number, result: boolean | string | null | Record<string, unknown>): void;
-    /**
-     * Close all popups
-     */
-    closeAll(): void;
-    private applyBodyLock;
-    private removeBodyLock;
-    private setupKeyboardListener;
-}
-declare function initPopup(container?: HTMLElement): Popup;
-declare function getPopup(): Popup;
-declare const popup: {
-    show: (options: PopupOptions) => Promise<string | boolean | Record<string, unknown> | null>;
-    confirm: (options: Parameters<Popup["confirm"]>[0]) => Promise<boolean>;
-    alert: (options: Parameters<Popup["alert"]>[0]) => Promise<boolean>;
-    prompt: (options: {
-        title: string;
-        titleTranslateKey?: string;
-        message: string;
-        icon?: string;
-        messageTranslateKey?: string;
-        onConfirm?: () => void | Promise<void>;
-    }) => Promise<string | null>;
-    showForm: (options: PopupFormOptions) => Promise<string | boolean | Record<string, unknown> | null>;
-    closePopup: (id: number, result: boolean | string | null | Record<string, unknown>) => void;
-    closeLastPopup: () => void;
-    closeFirstPopup: () => void;
-    closeAll: () => void;
-};
+declare function setDefaultFATheme(theme: FATheme): void;
+/**
+ * Initialize FontAwesome config from ClientConfig
+ * @param faConfig The FA configuration from ClientConfig
+ */
+declare function initializeFAConfig(faConfig?: FAConfig): void;
 
 type TabPosition = 'top' | 'side';
 type TabStyle = 'default' | 'pills' | 'minimal';
@@ -1985,4 +2044,4 @@ declare const bbMap: {
     };
 };
 
-export { type ApiConfig, type AppConfig, type BuildConfig, type ButtonConfig, CM, ClassMaker, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, EC, ElementCreator, type EventHandler, type FieldButtonConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, bbMap, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getI18n, getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tHtml, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };
+export { type ApiConfig, type AppConfig, type BuildConfig, type ButtonConfig, CM, ClassMaker, type ClassValue, type ClientConfig, CombinedContext, Component, type ComponentConstructor, Context, type ContextSubscriber, type DeepPartial, type DevToolsConfig, Dropdown, type DropdownConfig, type DropdownItemConfig, EC, ElementCreator, type EventHandler, type FAConfig, type FieldButtonConfig, type FormConfig, type FormFieldConfig, type FormFieldOption, type FormSubmitHandler, type FormsConfig, type I18nConfig, I18nManager, type IntersectionConfig, ItemsLoader, type ItemsLoaderConfig, type LabelConfig, type LanguageCode, Loader, type LoaderOptions, type LoaderSize, type LoaderVariant, type NavigationGuard, Popup, type PopupButton, type PopupFormOptions, type PopupOptions, type PopupSize, type PopupType, type PopupVariant, Provider, type ProviderProps, type Route, type RouteConfig, Router, type RouterConfig, SmartForm, SmartFormComponent, type StateConfig, Store, type StoreMiddleware, type StoreOptions, type StoreSubscriber, StyleManager, type Tab, type TabPosition, type TabStyle, TabbedView, type TabbedViewOptions, Toast, type ToastMessage, type ToastType, type TranslationSet, type ValidationRule, VisibilityObserver, Window$1 as Window, bbMap, camelCase, capitalize, clamp, classNames, clearHookContext, client, computed, connect, createCombinedContext, createComputedStore, createContext, createDropdown, createFunctionalComponent, createItemsLoader, createStore, createTabbedView, createTranslator, css, debounce, deepClone, deepMerge, formatDate, formatRelativeTime, formatTimeAgo, getCurrentLanguage, getCurrentPath, getDefaultFATheme, getI18n, getPopup$1 as getPopup, getQueryParam, getQueryParams, getSupportedLanguages, getTimeDisplay, getTimeTitle, getToast$1 as getToast, getTranslations, goBack, goForward, hasKey, initPopup, initToast, initializeFAConfig, initializeI18n, isBrowser, isCurrentPath, isCurrentPathPrefix, isEmpty, kebabCase, loadFromUrl, loadLanguage, loadLanguageFile, loadTranslations, mountTabbedView, navigate, navigateWithQuery, observeVisibility, parseQuery, pascalCase, popup, reloadRoute, router, safeJsonParse, scheduler, setDefaultFATheme, setHookContext, setLanguage, setLanguageAsync, setupI18n, sleep, state, stringifyQuery, t, tHtml, tLang, throttle, toast, truncate, uniqueId, useCallback, useContext, useDebounce, useEffect, useEventListener, useFetch, useInterval, useLocalStorage, useMemo, usePrevious, useReducer, useRef, useState, useToggle, useWindowSize, utils, watch };

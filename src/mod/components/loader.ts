@@ -9,7 +9,7 @@
     import { Component } from "../core/component";
     import { div, type VNode } from "@je-es/vdom";
     import { state } from "../core/decorators";
-    import { t } from "../services/i18n";
+    import { t } from "../core/i18n";
     import styleMap from "./bb_map.json";
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝

@@ -10,7 +10,7 @@
     import { div, html, i, span } from '@je-es/vdom';
     import { ClassMaker } from '../helpers';
     import { state } from '../core/decorators';
-    import { t } from '../services/i18n';
+    import { t } from '../core/i18n';
     import type { VNode } from '../../types';
     import styleMap from './bb_map.json';
 

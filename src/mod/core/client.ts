@@ -10,6 +10,7 @@
     import type { ApiConfig as CapiConfigType }     from '@je-es/capi';
     import { router }                               from './router';
     import { configureApi }                         from '@je-es/capi';
+    import { initializeFAConfig }                   from '../services/fa_config';
 
 // ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -305,6 +306,11 @@
                     }
 
                     configureApi(capiConfig);
+                }
+
+                // Initialize FontAwesome config
+                if (_config.fa) {
+                    initializeFAConfig(_config.fa);
                 }
 
                 // Configure router

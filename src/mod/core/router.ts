@@ -10,6 +10,7 @@
     import type { VNode }                               from '@je-es/vdom';
     import { Component, ComponentConstructor }          from './component';
     import { createElement }                            from '@je-es/vdom';
+import { t } from './i18n';
 
     export type { Route, RouteConfig, NavigationGuard };
 
@@ -251,7 +252,9 @@
                 await this._renderComponent(route);
                 this._handleScrollBehavior(to, from);
 
-                if (route.meta?.title && typeof route.meta.title === 'string') {
+                if (route.meta?.t_title && typeof route.meta.t_title === 'string') {
+                    document.title = t(route.meta.t_title);
+                } else if (route.meta?.title && typeof route.meta.title === 'string') {
                     document.title = route.meta.title;
                 }
 
@@ -453,9 +456,8 @@
             if (this.routerOutlet) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 this.routerOutlet.innerHTML = `
-                    <div style="padding: 2rem; background: #121212ff; border: 2px solid #303030ff;
-                                border-radius: 8px; margin: 2rem;">
-                        <h2 style="color: rgba(208, 31, 31, 1); margin-top: 0;">⚠️ Failed to Load Component</h2>
+                    <div style="padding: 2rem; background: #121212ff; border: 2px solid #303030ff; border-radius: 8px; margin: 2rem auto; max-width: 600px; direction: ltr;">
+                        <h2 style="color: rgba(208, 31, 31, 1); margin-top: 0;">Failed to Load Component</h2>
                         <p style="color: #a3a3a3ff;"><strong>Route:</strong> ${path}</p>
                         <p style="color: #a3a3a3ff;"><strong>Error:</strong> ${errorMessage}</p>
                     </div>
